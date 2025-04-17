@@ -1,0 +1,690 @@
+# Discard
+
+
+## Other
+
+cpu, gpu, sound card, memory
+
+genral computation, graphic computation, tensor computation,  audio resolve, video resolve
+
+memory, cache
+
+keyboard, touchpad, fingerprint, camera, microphone
+
+monitor, speaker
+
+ether, wifi, bluetooth, usb, disk
+
+pcie, usb
+
+kernel
+- `linux`, `linux-lts`, `linux-firmware`
+
+microcode
+
+bootloader
+- `grub`
+
+filesystem
+- `zoxide`
+- `lsd`, `bat`
+- `fzf`, `fd`, `ripgrep`
+- `yazi`
+
+monitor
+- `brightnessctl`
+
+camera
+
+sound: speaker, microphone
+- `pipewire`, `pipewire-pulse`, `wireplumber`
+
+bluetooth
+- `bluez`, `bluez_utils`
+
+inputMethod
+
+instant message
+- `linuxqq`
+- `wechat`
+
+code
+- `nvm`
+
+other
+- `btop`, `usbutils`
+
+kernel, c lib, cli utility, tool chain
+
+linux kernel, uClibc, make, bash, binutils, gcc, busybox
+
+
+bluez bluez-utils controller, agent, pair, discover, trust, scan
+
+`/etc/dunst/dunstrc`, dunst default configuration
+
+dunst
+
+icon theme
+
+source, sink, stream, devices, filters
+
+grim, slurp
+
+Initial
+- `.ignore file`
+- `git init`
+- `git clone [-b] <url> <dir>`
+
+Config git
+- `git config --global user.name dao77777`
+- `git config --global user.email dao77777@qq.com`
+- `git config --global init.defaultBranch main`
+- `git conifg --global --edit`: edit global config
+
+Track file
+- `git add <file>`
+- `git rm --cached <file>`
+
+Working space
+- `git diff`: compare working and stage
+- `git add <file>`: working -> stage
+- `git restore --staged <file>`: stage -> working
+- `git restore <file>`: working -> commit
+
+Commit
+- **branch**
+  - `git checkout -b <new_branch> <old_branch>`: create a new branch
+  - `git branch <new_branch> <commit_hash>`: create a new branch
+  - `git branch -m <old_branch_name> <new_branch_name>`: rename branch
+  - `git branch -D|-d <branch>`: delete a branch
+  - `git remote add <remote_name> <url>`: add a remote
+  - `git remote remove <remote_name>`: remove a remote
+  - `git push origin <branch:remote_branch_name>`: create a new branch in remote
+  - `git push origin -d <branch_name>`: delete a branch in remote
+  - `git push --all`: push all branches to remote
+  - `git fetch --all <--prune>`: fetch all branches from remote
+- **set upstream track**
+  - `git push -u <remote> <local_branch:remote_branch>`: set upstream track
+  - `git branch -u <remote/branch_name>`: set upstream track
+  - `git branch --unset-upstream`: unset upstream track
+- **merge**
+  - `git merge <other_branch> -m <message>`: there's some different merge way, like fast-forward, 3-way, recursive
+  - `git rebase -i --root`
+  - `git cherry-pick <commit_hash>`
+- `git commit -m <mssage>`: new_commit -> stage
+- `git commit -m <message> --amend`: modify last commit message
+- `git log --oneline --graph --all --decorate`: simplified commit history
+
+- `git log --after="2024-12-21" --before="2024-12-25"`: filter commit history by time
+- `git log --grep="something"`: filter commit history by message
+- `git log --author="dao77777"`: filter commit history by author
+- `git log -- <file>`: filter commit history by file
+- `git log <branch1>..<branch2>`: filter commit history by branch
+
+Pointer
+- `git reset --hard <commit_hash>`: move HEAD pointer to specific commit
+- `git switch <branch_name>`: move HEAD pointer to specific branch
+- `git reflog`: pointer history
+
+Submodule
+- `git submodule add <url>`: add a submodule
+- `git submodule update --init --recursive`: clone submodule
+- `git clone --recurse-submodules <url>`: clone submodules initially
+
+# Neovim
+
+- 'nvim-telescope/telescope.nvim'
+- 'rose-pine/neovim'
+- 'nvim-treesitter/nvim-treesitter'
+- 'mbbill/undotree'
+- 'tpope/vim-fugitive'
+- 'which-key'
+- 'leap.nvim'
+
+'VonHeikemen/lsp-zero.nvim'
+```lua
+use({
+  'VonHeikemen/lsp-zero.nvim',
+  requires = {
+    -- LSP Support
+    { 'neovim/nvim-lspconfig' },
+    { 'williamboman/mason.nvim' },
+    { 'williamboman/mason-lspconfig.nvim' },
+
+    -- Autocompletion
+    { 'hrsh7th/nvim-cmp' },
+    { 'hrsh7th/cmp-buffer' },
+    { 'hrsh7th/cmp-path' },
+    { 'saadparwaiz1/cmp_luasnip' },
+    { 'hrsh7th/cmp-nvim-lsp' },
+    { 'hrsh7th/cmp-nvim-lua' }
+
+    -- Snippets
+    { 'L3MON4D3/LuaSnip' },
+    { 'rafamadriz/friendly-snippets' }
+  }
+})
+```
+1. Download [ISO file](https://mirrors.aliyun.com/archlinux/iso/2024.12.01/archlinux-2024.12.01-x86_64.iso?spm=a2c6h.25603864.0.0.292a6510DsJzDU) from internet
+2. 
+
+## github
+
+organization, repository, environment
+
+when to read
+- workflow queued: organization & repository
+- job referencing environment secret starts: environment
+
+personal credentials, deploy keys, service account, github app, fine grained permission
+
+secret: can be accessed by workflow, and can be managed by ***user interface*** or ***restful api***
+
+personal access token, github token, github app installation access token
+
+workflow_dispatch, repository_dispatch
+
+
+## gcc
+
+1. `gcc -c main.c`: output `main.o` file
+2. `gcc -o main main.o`: output `main` file
+
+`gcc -o main main.c`
+
+`gcc -o main main.c random.c -lm`: compile `main.c` & `random.c` into `main` file, and link `math` library
+
+## cmake
+ 
+tutorial: [cmake菜谱](https://www.bookstack.cn/read/CMake-Cookbook/README.md)
+
+**library**
+- **static lib**: `*.a`
+- **dynamic lib**: `*.so`
+
+**cmake build steps**
+1. `cmake -B build`
+2. `cmake --build build`
+
+**cmake project structure**
+- bin
+  - main
+- lib
+  - liblib1.a
+  - liblib2.a
+  - libexternal_lib1.a
+  - libexternal_lib2.a
+- build
+- external
+  - external_lib1
+    - external_lib1.cpp
+    - external_lib1.hpp
+    - CMakeLists.txt
+  - external_lib2
+    - external_lib2.cpp
+    - external_lib2.hpp
+    - CMakeLists.txt
+- src
+  - lib1
+    - lib1.cpp
+    - lib1.hpp
+    - CMakeLists.txt
+  - lib2
+    - lib2.cpp
+    - lib2.hpp
+    - CMakeLists.txt
+  - main.cpp
+  - CMakeLists.txt
+- CMakeLists.txt
+
+**root**
+```cmake
+// cmake config
+cmake_minimum_required(VERSION 3.20)
+project(lean-cmake LANGUAGES CXX)
+
+// compiler config
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS ON)
+
+// static lib
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY $(CMAKE_CURRENT_LIST_DIR)/lib)
+// dynamic lib
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY $(CMAKE_CURRENT_LIST_DIR)/bin)
+// executable file
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY $(CMAKE_CURRENT_LIST_DIR)/bin)
+
+add_sub_directory(src)
+add_sub_directory(external)
+```
+
+**/src**
+```camke
+add_executable(main main.cpp)
+
+add_subdirectory(lib1)
+add_subdirectory(lib2)
+
+target_link_libraries(main
+PRIVATE
+  lib1
+  lib2
+  external_lib1
+  external_lib2
+)
+```
+
+**lib**
+```cmake
+add_library(lib1 "")
+
+target_sources(lib1
+PRIVATE
+  lib1.cpp
+PUBLIC
+  lib2.hpp
+)
+
+target_include_directories(lib1
+PUBLIC
+  ${CMAKE_CURRENT_LIST_DIR}
+)
+```
+
+推挽输出, 高阻态. 弱上拉, 开漏输出
+
+
+**UEFI/BIOS**
+- Legacy BIOS: tied to Master Boot Record (MBR) partitioning scheme, 2TB limit
+- UEFI: use GUID Partition Table (GPT) partitioning scheme, support 2TB+ disk, support secure boot
+
+
+**Storage**
+- protocol: SATA, NVMe, SCSI 
+- partition
+  - MBR tied to Legacy BIOS, GPT for UEFI 
+  - windows partition: EFI system partition(ESP), Microsoft Reserved Partition(MSR), Recovery Partition, common(ntfs), common partition usually named `C:/`
+  - windows disk management: computer management -> storage -> disk management
+  - linux partition: EFI system partition(ESP), swap(swap), common(ext4, brtfs), common partition usually mount to `/` and `/home`, efi partition usually mount to `/boot`
+- filesystem
+  - windows: NTFS
+  - linux: ext4, brtfs
+
+partition: fdisk
+
+Check windows boot mode: type `Win + R`, then input `msinfo32`, then check `BIOS Mode` entry
+
+Check linux boot mode: type `ls /sys/firmware/efi/efivars`, if the directory exists, then the system is booted in UEFI mode(32 means 32 bit for UEFI, 64 means 64bit for UEFI)
+
+
+Esp is usually in `fat32` format cause it's gonna be universally supported by bootloader as much as possible
+
+UEFI nvram management: efibootmgr
+- `sudo efibootmgr`: list nvram entries
+- `sudo efibootmgr -c -d /dev/sda -p 1 -L "Linux Bootloader" -l "\EFI\linux\grubx64.efi"
+`: add nvram entry
+- `sudo efibootmgr -b 0002 -B`: delete nvram entry
+- `sudo efibootmgr -o 0002,0001,0000`: change boot order
+
+**Bootloader**
+- windows: windows boot manager
+- macos: bootx
+- linux: grub2, systemd, rEElnd, lilo, UEFI Shell, linux itself EFI boot stub
+
+**ESP**: usually mounted on `/boot`
+- linux kernel file
+- initramfs file & initramfs fallback file
+- loader: bootloader configuration file
+- EFI: bootloader
+  - BOOT
+    - BOOTX64.EFI: default path of executable efi file
+  - Mircrosoft
+    - Boot
+      - bootmgfw.efi
+  - linux
+  - systemd
+    - systemd-bootx64.efi
+
+**Wlan**
+- device: adapter -> device 
+- Basic Service Set(BSS): identified by BSSID
+  - IBBS: ad-hoc mode
+  - Infrastructure BBS
+    - access point(ap)
+    - station
+      - known-network: can be connected automatically while without password
+      - unknown-network: usually when first connect with password
+- ESS: Extended Service Set composed of multiple BSS, identified by SSID
+
+**Wifi Management**
+- iwd: wifi management daemon
+  - iwd: daemon
+  - iwctl: cli
+  - iwmon: wifi monitor
+  - `/etc/iwd/main.conf`
+  ```toml
+  [General]
+  EnableNetworkConfiguration=true # enable dhcp client
+
+  [Network]
+  NameResolvingService=systemd # specify dns resolving service
+  EnableIPv6=false # disable ipv6
+  ```
+  - `/var/lib/iwd/<ssid>.<type>`: store network profiles
+  ```toml
+  [IPv4] # static ip configure
+  Address=192.168.1.10
+  Netmask=255.255.255.0
+  Gateway=192.168.1.1
+  Broadcast=192.168.1.255
+  DNS=192.168.1.1
+  ```
+- impala: tui for iwd
+
+**Archlinux install**
+- reference: [archlinux installation guide](https://wiki.archlinux.org/title/Installation_guide)
+1. prepare a installation media
+2. insatll [ventoy](https://www.ventoy.net/en/index.html) on the media
+3. download [archlinux iso](https://archlinux.org/download/) to the media
+4. on POST stage, configure boot order to boot from the media
+5. select archlinux iso to bootstrap
+6. keyboard layout & font
+  - keyboard layout set: `locale list-keymaps -> loadkeys <keymap>`
+  - font set: `ls /usr/share/kbd/consolefonts/ | less -> setfont <font>`, usually `ter-120b`
+7. because of archlinux iso already configure the dhcp(systemd-networkd) and dns(systemd-resolved) for network, what need to do is to connect to network by ethernet(by cable) or wifi(by wireless)
+  - ethernet: plug the cable into your computer
+  - wifi: use iwctl(iwd is already set up) to connect
+    - `station list`: find out the wlan device
+    - `station <wlan> scan`: scan the network
+    - `station <wlan> get-networks`: list networks discovered above
+    - `station <wlan> connect <network_ssid>`: connect to a network you want
+8. time sync: archlinux iso already set up the time sync by systemd-timedated, when network connected, the time will be sync automatically
+9. partitioning
+  1. `fdisk -l`: list all disks info
+  2. `fdisk </dev/path_to_target_disk>`: partitioning to a target disk
+  3. create 3 partition: 1G for esp, 50G for root, rest spaces for home, use command `n` to add
+  4. specify type for partition: EFI system for esp, Linux root(x86_64) for root, Linux filesystem for home, use `t` to specify, use `l` to query code for each type, 1 is EFI system, 23 is Linux root(x86-64), 20 is Linux filesystem
+10. assign filesystem
+  - `mkfs.fat -F 32 /dev/<esp_partition>`: format esp partition to fat32
+  - `mkfs.ext4 /dev/<root_partition>`: format root partition to ext4
+  - `mkfs.ext4 /dev/<home_partition>`: format home partition to ext4
+11. mount partition
+  - `mount /dev/<root_partition> /mnt`: mount root partition to `/mnt`
+  - `mount /dev/<esp_partition> /mnt/boot --makedir`: mount esp partition to `/mnt/boot`
+  - `mount /dev/<home_partition> /mnt/home --makedir`: mount home partition to `/mnt/home`
+12. generate base filesystem structure & install packages: `pacstrap -K /mnt base base-devel linux linux-lts linux-firmware grub efibootmgr less vi vim neovim git`
+  - base package: `base` `base-devel`
+  - kernel: `linux` `linux-lts` `linux-firmware`
+  - bootloader: `grub` `efibootmgr`
+  - other: `less vi vim neovim git`
+13. generate fstab: `genfstab -U /mnt >> /mnt/etc/fstab`
+14. chroot: `arch-chroot /mnt`
+15. bootloader set
+  1. install: `grub-install --target=x86_64-efi --efi-directory=esp --bootloader-id=GRUB`
+  2. configure: `grub-mkconfig -o /boot/grub/grub.cfg`
+  3. TODO: more grub setting
+16. reboot
+17. set user and password & login common user
+  1. `passwd`: set root's password
+  2. `useradd -m dao77777`: add user
+  3. `visudo`: uncomment `# %wheel ALL=(ALL) ALL` to specify sudoer group
+  4. `passwd dao77777`: set user's password
+  5. `usermod -aG wheel dao77777`: add user to sudoer group
+  6. common user login
+18. pacman config
+  1. add archlinuxcn repo
+    ```toml
+    [archlinuxcn]
+    Server = https://mirrors.ustc.edu.cn/archlinuxcn/$arch
+    Server = https://mirrors.tuna.tsinghua.edu.cn/archlinuxcn/$arch
+    Server = https://mirrors.hit.edu.cn/archlinuxcn/$arch
+    Server = https://repo.huaweicloud.com/archlinuxcn/$arch
+    ```
+  2. `sudo pacman-key --lsign-key "farseerfc@archlinux.org"`: sign key
+  3. `sudo pacman -S archlinuxcn-keyring`: install archlinuxcn keyring
+  4. `sudo pacman -S reflector`: install mirrorlist tool
+  5. substitute mirrorlist
+  ```bash
+  sudo reflector \
+    --country China \
+    --protocol https \
+    --latest 11 \
+    --save /etc/pacman.d/mirrorlist
+  ```
+  6. `sudo pacman -Syu`: sync local database
+  7. `su dao77777 && cd ~`
+  8. `sudo pacman -S cargo`
+  9. `git clone https://aur.archlinux.org/paru.git`
+  10. `cd paru && makepkg -si`
+  11. `cd .. && rm -rf paru`
+19. network set
+  - `/etc/hostname`: set hostname
+  - for ethernet
+    1. dhcp client: `systemctl enable --now systemd-networkd`
+    2. dns resolve: `systemctl enable --now systemd-resolved`
+  - for wlan
+    1. install iwd: `paru -S iwd`
+    1. edit `/etc/iwd/main.conf`
+    ```toml
+    [General]
+    EnableNetworkConfiguration=true # enable dhcp client
+
+    [Network]
+    NameResolvingService=systemd # specify dns resolving service
+    EnableIPv6=false # disable ipv6
+    ```
+    2. iwd: `systemctl enable --now iwd`
+    3. dns resolve: `systemctl enable --now systemd-resolved`
+    4. use iwctl to connect a network
+    5. if you wan a static ip address, then edit `/var/lib/iwd/<ssid>.<type>`
+    ```toml
+    [IPv4] # static ip configure
+    Address=192.168.1.10
+    Netmask=255.255.255.0
+    Gateway=192.168.1.1
+    Broadcast=192.168.1.255
+    DNS=192.168.1.1
+    ```
+  - configure `/etc/resolv.conf`, add `nameserver 8.8.8.8`
+20. proxy set
+  1. font install: `paru -S noto-fonts-cjk-sc-vf noto-fonts-emoji ttf-cascadia-code-nerd ttf-harmonyos-sans otf-font-awesome`
+  2. wm & terminal & browser & cloud storage & proxy install: `paru -S hyprland kitty clash-verge-rev-bin`
+  3. go into wm: `hyprland`
+  4. open clash-verge and input subscribe url
+  5. install mihomo-party: `paru -S mihomo-party-git`
+  6. reinstall hyprland: `paru -S hyprland-git`
+  7. remove clash-verge: `paru -Rns clash-verge-reve-bin`
+21. ssh
+  1. `paru -S openssh`
+  2. `sudo systemctl enable --now sshd`
+  3. `ssh-keygen`
+  4. browser install: `paru -S zen-browser`
+  5. login github, add machine's ssh pub key into github
+22. time set
+  1. `sudo systemctl enable --now systemd-timesyncd`: enable ntp client
+  2. `sudo hwclock --systohc --utc`: set hardware clock
+  3. `ln -sf /usr/share/zoneinfo/Asia/Chongqing /etc/localtime`: timezone set
+23. locale
+  1. `/etc/locale.gen`: uncomment `#en_US.UTF-8 UTF-8` to generate locale
+  2. `locale-gen`: generate locales specified in `/etc/locale.gen`
+  3. `/etc/locale.conf`: set `LANG=en_US.UTF-8` to set system locale
+24. sync from github & cloud storage
+  1. install bypy: `paru -S bypy-git`
+  2. authorize bypy: `bypy info`
+  3. sync from bypy: `bypy download _secret _secret`
+  4. sync from github
+    - `git clone git@github.com:dao77777/_doc.git`
+    - `git clone git@github.com:dao77777/_dotfile.git`
+    - `git clone git@github.com:dao77777/51.git ~/_code/51`
+25. shell
+  1. `paru -S zsh`: install zsh
+  2. `chsh -s $(which zsh)`: change default shell to zsh fro current user
+  3. install dependencies: `paru -S starship pfetch`, zinit had been configured in `~/.zshrc` 
+25. install DE software: `paru -S hyprpaper-git hyprlock-git wofi waybar zoxide fzf lsd nvm yazi brightnessctl pipewire pipewire-pulse wireplumber bluez bluez_utils fcitx5 fcitx5-gtk fcitx5-qt fcitx5-configtool fcitx5-chinese-addons fcitx5-material-color linuxqq wechat btop usbutils pm2 wps-office-cn`
+  - `lsd bat zoxide fzf fd ripgrep`
+  - `wl-clipboard cliphist`
+  - `systemctl --user enable --now pipewire pipewire-pulse wireplumber`
+  - `systenctl enable --now bluetooth`
+26. install `bun`: `curl -fsSL https://bun.sh/install | bash`, how to uninstall? `rm -rf ~/.bun` & delete line related to bun in `~/.zshrc`
+
+
+cpu, gpu, sound card, memory
+
+genral computation, graphic computation, tensor computation,  audio resolve, video resolve
+
+memory, cache
+
+keyboard, touchpad, fingerprint, camera, microphone
+
+monitor, speaker
+
+ether, wifi, bluetooth, usb, disk
+
+pcie, usb
+
+kernel
+- `linux`, `linux-lts`, `linux-firmware`
+
+microcode
+
+bootloader
+- `grub`
+
+filesystem
+- `zoxide`
+- `lsd`, `bat`
+- `fzf`, `fd`, `ripgrep`
+- `yazi`
+
+monitor
+- `brightnessctl`
+
+camera
+
+sound: speaker, microphone
+- `pipewire`, `pipewire-pulse`, `wireplumber`
+
+bluetooth
+- `bluez`, `bluez_utils`
+
+inputMethod
+- `fcitx5`, `fcitx5-gtk`, `fcitx5-qt`
+- `fcitx5-configtool`
+- `fcitx5-material-color`
+- `fcitx5-chinese-addons`
+
+instant message
+- `linuxqq`
+- `wechat`
+
+code
+- `nvm`
+
+other
+- `btop`, `usbutils`
+
+ `bootctl`: check secure boot status
+
+bootloader -> kernel(kernel parameters) + initramfs(mkinitcpio)
+
+## Boot Process
+
+**UEFI boot process**
+1. start UEFI
+2. UEFI runs power-on self-test(POST)
+3. boot device
+4. find .efi bootloader file in EFI system partition(ESP) according to UEFI nvram's boot order
+5. start bootloader(grub2, systemd, rEElnd, lilo) chainload
+6. end of bootloader chainload, load kernel and initramfs
+7. load device drivers, kernel modules, daemon process
+8. start initial process(systemd, sysvinit)
+
+Legacy BIOS boot process
+1. start legacy BIOS
+2. BIOS runs power-on self-test(POST)
+3. boot device
+4. load MBR boot code area
+5. chainload the bootable partition's boot sector(VBR)
+6. end of bootloader chainload, load kernel and initramfs
+7. load device drivers, kernel modules, daemon process
+8. start initial process(systemd, sysvinit)
+
+**Kernel initial process**
+1. bootloader load kernel with kernel parameters and initramfs
+2. initramfs
+  1. kernel unpack built-in initramfs into temporary rootfs
+  2. kernel unpack external initramfs specified by bootloader override early fs
+  3. consult bootloader `root=` info to mount rootfs
+  4. check `/etc/fstab` in rootfs to mount other filesystems
+3. early userspace
+4. late userspace. 
+  1. init process(systemd, sysvinit)
+  2. login
+    - getty & login
+      1. getty & login
+      2. x init -> graphical session | login shell
+    - display manager
+      1. display manager
+      2. x init -> graphical session
+
+## Disk
+
+**Partitioning**
+- `fdisk -l`: list all disks and corresponding typed partitions
+- `fdisk /dev/<partition>`: partitioning specific partition
+  - `p`: print all partitions
+  - `n`: new partition
+  - `l`: query all accessible partition types
+  - `t`: type specific partition
+
+Some common types: `EFI system` for ESP, `Linux SWAP` for swap, `Linux root(x86-64)` for root partition, `Linux filesystem` for common partition
+
+Some common partitions: 1G for EFI system partition, 16G for swap partition 50G for root partition, rest of all for home partition
+
+**File System**
+- `mkfs.fat -F 32 /dev/<partition>`: turn disk to `FAT32` filesystem, usually used by ESP(aim for compatible)
+- `mkfs.ext4 /dev/<partition>`: turn partition to `EXT4` filesystem, aim for common use
+- `mkfs.brtfs /dev/<partition>`: turn partition to `BRTFS` filesystem, aim for common use
+- `mkswap /dev/<swap_partition>`: turn partition to `SWAP` filesystem
+
+**Mount**
+- `mount /dev/<partition> <mount_point> [--mkdir]`: mount partition to a mount point
+- `swapon /dev/<swap_partition>`: create swap volume
+
+**Generate Structure**: `pacstrap -K <root_path> base linux linux-lts linux-firmware <other packages>`
+
+## Bootloader
+
+## Kernel
+
+`genfstab -U <root_path> > <root_path>/etc/fstab`
+
+## Localization
+
+**Keyboard layout**
+- Console
+  - `locale list-keymaps`: list all keymaps
+  - `loadkeys <keymap>`: set keyboard layout
+  - `/etc/vconsole.conf`: persistent keyboard layout
+
+**Input Method**
+- /
+
+**Locale**
+- `/etc/locale.gen`: uncomment entries to configure locale-gen
+- `locale-gen`: generate locales specified in `/etc/locale.gen`
+- `/etc/locale.conf`: set `LANG=zh_CN.UTF-8` to set system locale
+- `/usr/share/i18n/locales`: list of locales
+- `/usr/share/i18n/charmaps`: list of charmaps
+
+**Time**
+- timezone set: `ln -sf /usr/share/zoneinfo/Asia/Chongqing /etc/localtime`
+- systemd-timedated & systemd-timesyncd
+- hwclock: `hwclock --systohc --utc`
+
+**Font**
+- Console
+  - `/usr/share/kbd/consolefonts`: check console font lists
+  - `setfont <console_font>`: set console font

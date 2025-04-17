@@ -1,27 +1,31 @@
 import NextAuth from "next-auth";
 import GitHub from "next-auth/providers/github";
-import Credentials from "next-auth/providers/credentials";
-import { PrismaAdapter } from "@auth/prisma-adapter";
-import { prisma } from "@/prisma";
+// import Credentials from "next-auth/providers/credentials";
+import { DrizzleAdapter } from "@auth/drizzle-adapter";
+import { db } from "./lib/db";
+import Resend from "next-auth/providers/resend";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
     // debug: true,
-    adapter: PrismaAdapter(prisma),
+    adapter: DrizzleAdapter(db),
     session: {
         strategy: "jwt"
     },
     providers: [
-        Credentials({
-            credentials: { password: { label: "Password", type: "password" } },
-            authorize(c) {
-                if (c?.password !== "password") return null;
-                return {
-                    id: "test",
-                    name: "Test User",
-                    email: "test@example.com",
-                    image: "https://avatars.githubusercontent.com/u/57589915?v=4"
-                };
-            },
+        // Credentials({
+        //     credentials: { password: { label: "Password", type: "password" } },
+        //     authorize(c) {
+        //         if (c?.password !== "password") return null;
+        //         return {
+        //             id: "test",
+        //             name: "Test User",
+        //             email: "test@example.com",
+        //             image: "https://avatars.githubusercontent.com/u/57589915?v=4"
+        //         };
+        //     },
+        // }),
+        Resend({
+            from: "verify@dao77777.space",
         }),
         GitHub({
             clientId: process.env.GITHUB_ID!,

@@ -1,4 +1,38 @@
 @import "tailwindcss";
+@plugin "@tailwindcss/typography";
+@plugin 'tailwind-scrollbar' {
+  nocompatible: true;
+  preferredStrategy: 'pseudoelements';
+}
+
+@layer components {
+  .custom-scroll {
+    @apply 
+    scrollbar
+    scrollbar-thumb-rounded-full
+    scrollbar-track-rounded-full
+    scrollbar-w-0.5
+    sm:scrollbar-w-1
+    scrollbar-thumb-stone-400
+    scrollbar-hover:scrollbar-thumb-stone-500
+    scrollbar-track-stone-300/0
+    scrollbar-track-hover:scrollbar-track-stone-300
+    scrollbar-active:scrollbar-thumb-stone-600;
+  }
+  .custom-border {
+    @apply
+    shadow-sm
+    rounded-sm p-4
+    border-[1px] border-stone-400/5
+    hover:border-[1px] hover:border-stone-400/50
+    transition-all;
+  }
+  .custom-link {
+    @apply 
+    text-sky-700 hover:text-sky-500 
+    underline underline-offset-2;
+  }
+}
 
 @plugin "tailwindcss-animate";
 

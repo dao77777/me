@@ -1,0 +1,80 @@
+# Pacman
+
+**Path that download pkg to local from remote repo**
+1. sync database from remote repo
+2. update or install pkg to the target version of database from remote repo
+
+**Structure of archlinux repository**
+- repository name
+- architecture
+- mirror
+
+**Common Pacman Repo**
+- core
+- extra
+- multilib
+- `<custom_repo>`: for example, archlinuxcn
+```toml
+[archlinuxcn]
+Server = https://mirrors.ustc.edu.cn/archlinuxcn/$arch
+Server = https://mirrors.tuna.tsinghua.edu.cn/archlinuxcn/$arch
+Server = https://mirrors.hit.edu.cn/archlinuxcn/$arch
+Server = https://repo.huaweicloud.com/archlinuxcn/$arch
+```
+
+**Sig**
+
+## `/etc/pacman.conf`
+
+**Option block**
+```toml
+# File Path
+RootDir = /
+DBPath = /var/lib/pacman
+CacheDir = /var/cache/pacman/pkg
+LogFile = /var/log/pacman.log
+GDGDir = /etc/pacman.d/gnupg
+HookDir = /etc/pacman.d/hooks
+ 
+# Common
+HoldPkg = pacman glibc
+XferCommand = /usr/bin/curl -L -C - -f -o %o %u
+XferCommand = /usr/bin/wget --passive-ftp -c -O %o %u
+CleanMethod = KeepInstalled
+Architecture = auto
+IgnorePkg = 
+IgnoreGroup = 
+NoUpgrade = 
+NoExtract = 
+
+# Misc Options
+UseSyslog
+Color
+NoProgressBar
+CheckSpace
+VerbosePkgLists
+ParallelDownloads = 5
+DownloadUser = alpm
+DisableSandbox
+
+# SigLevel
+SigLevel = Required DatabaseOptional
+LocalFileSigLevel = Optional
+RemoteFileSigLevel = Required
+```
+
+**Repo block**
+```toml
+[repo_name]
+Include = <mirror_list_path>
+Server = <mirror1_url_with_$repo_and_$arch>
+Server = <mirror2_url_with_$repo_and_$arch>
+```
+
+## `/etc/pacman.d/mirrorlist`
+
+Mirror file included by `/etc/pacman.conf`
+
+## Undefine
+
+makepkg PKGBUILDS keyrings hook

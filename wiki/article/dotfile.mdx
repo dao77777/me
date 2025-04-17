@@ -1,0 +1,225 @@
+## OS
+
+- filesystem structure: base
+- kernel: linux, linux-lts, linux-firmware
+- utils: base-devel
+- distro: archlinux
+- bootloader: systemd-bootloader
+- init system: systemd
+
+## Locale
+
+- encode: UTF-8
+- language: zh_CN
+- keyboardLayout: en_US
+- inputMethod: pinyin(fcitx5)
+- timezone: Asia/Shanghai
+
+## Clock
+
+needed two kinds sync process
+- 1. the first one is the ntp protocol syncing system clock from world standard clock according to internet
+- 2. the second is syncing hardware clock fron system clock by hwclock
+
+systemd-timedated
+
+## Network
+
+- systemd-networkd: network manager
+- systemd-resolved: namesever manager
+- proxy: clash-verge-rev
+- vpn: zerotier
+
+## Audio
+
+- pipewire: audio server
+- pipewire-pulse: compatible with pulse audio
+- wireplumber: session manager
+- pavucontrol: graphical interface
+
+## Graphic Card
+
+- driver for amd user: mesa
+- display server: wayland
+
+## Bluetooth
+
+- bluez: contain bluetooth kernel, and bluetooth.service to be enabled
+- bluez-utils: some cli, for example bluetoothctl, for the bluetooth.service daemon
+
+## Non-Graphical Session
+
+multi-user.target
+
+- login: getty login
+- shell: zsh
+
+## Remote-Non-Graphical Session
+
+openssh
+
+## Graphical Session
+
+graphical.target
+
+- login: sddm
+- windowManager: hyprland, it's amazing and beauty
+
+## Remote-Graphical Session
+
+VNC
+
+# Dev
+
+## Hypervisor
+
+install qemu on archlinux
+1. install cmd: `sudo pacman -Syu qemu-full libvirt virt-install virt-manager virt-viewer bridge-utils dnsmasq dhclient dmidecode ebtables openbsd-netcat`
+  - libvirt: libvirtd, virshell
+2. add user to libvrit & kvm group 
+3. configure virsh running with system-wide permission
+  - create libvirt dir: `mkdir ~/.config/libvirt`
+  - copy config file: `sudo cp /etc/libvirt/libvirt.conf ~/.config/libvirt/`
+  - change file's owner: `sudo chown <user>:<group> ~/.config/libvirt/libvirt.conf`
+  - uncommnet `uri_default = "qemu:///system"`
+4. define network: `sudo virsh net-define /etc/libvirt/qemu/networks/default.xml`
+5. autostart network: `sudo virsh net-autostart default`
+6. start network: `sudo virsh net-start default`
+7. ufw set: `sudo ufw allow in on virbr0` & `sudo ufw allow out on virbr0`
+8. set iso location to `~/vm/images` to avoid permission problem
+9. set volume pool to `~/vm/libvirt`
+
+virt-install example
+```bash
+virt-install \
+  --name ubuntu \
+  --ram 2048 \
+  --disk path=/var/lib/libvirt/images/ubuntu.qcow2,size=8 \
+  --vcpus 2 \
+  --os-type linux \
+  --os-variant generic \
+  --console pty.target type=serial \
+  --cdrom /var/lib/libvirt/isos/ubuntu-18.04.4-live-server-amd64.iso
+```
+
+virt-clone example
+```bash
+virt-clone \
+  --original ubuntu \
+  --name ubuntu-clone \
+  --file /var/lib/libvirt/images/ubuntu-clone.qcow2
+```
+
+`sudo systemctl enable --now libvirtd`
+
+# Rice
+
+## Font
+
+- common font: Noto Font, Harmonyos sans
+- coding font: CaskaydiaCove Nerd Font
+- emoji: Noto Color Emoji
+- math: STIX Two Math
+
+## Wallpaper
+
+hyprpaper
+
+## StatusBar
+
+waybar
+
+## Dock
+
+???
+
+## PowerButtonManager
+
+???
+
+## Lock
+
+hyprlock
+
+## Menu
+
+wofi
+
+## Clipboard Manager
+
+cliphist
+
+## Screen Share
+
+???
+
+## Color Picker
+
+???
+
+## Video Record & Audio Record
+
+???
+
+## Terminal
+
+kitty
+
+## Browser
+
+zen
+
+## Image Preview
+
+???
+
+## Video Player
+
+???
+
+## Audio Player
+
+???
+
+## Image Editor
+
+???
+
+## Video Editor
+
+???
+
+## Audio Editor
+
+???
+
+## Text Editor
+
+neovim
+
+## Instant Message
+
+wechat-bin
+
+## Meeting
+
+???
+
+## baiduyunpan sync
+
+bypy
+
+install: `paru -S bypy-git`
+
+bypy example usage
+```bash
+bypy info # show info & authorize
+bypy list # list all files in /apps/bypy under baiduyunpan
+bypy download # download dir or file from /apps/bypy
+```
+
+## Proxy
+
+Mihomo Party
+
+install: `paru -S mihomo-party`

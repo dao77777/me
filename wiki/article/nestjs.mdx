@@ -1,0 +1,163 @@
+# NestJs
+
+Fastify Adapter
+
+SocketIO Adapter
+
+node:cluster
+node:path
+- join
+node:fs
+- appendFileSync
+- readFileSync
+- writeFileSync
+- mkdirSync
+- existsSync
+node:os
+- cpus
+process
+- pid
+- env
+- argv
+- on: SIGINT
+- exit
+json5, js-yaml, dayjs
+nest & axio 
+jwt & throttle
+node-machine-id
+zx-cjs
+- $
+- chalk
+
+ncc: 打包所有内容成一个js文件, 但不允许运行时动态加载模块
+cbor-x: 高性能编解码库
+
+- arg & env
+- globalThis & log & time
+- mode
+    - dev | prod
+    - test
+    - debug
+    - demo
+- cross domain: allow origins
+- directory path
+- listen & http request
+- cluster
+- auth & throttle
+- encrypt
+- database
+    - migrate
+    - mongodb
+        - dbName
+        - host
+        - port
+        - user
+        - password
+        - connection string
+- cache
+    - browser cache
+    - cdn cache
+    - redis
+        - host
+        - port
+        - password
+        - ttl
+        - max
+        - disableApiCache
+- resolve
+    - json
+    - yaml
+
+1. registerGlobal: isDev, consola, cwd, json
+2. setEnv & setArg
+3. createPath
+```typescript
+// tool
+const resolvePath = (path: string) => {
+  const EnumPathType = {
+    HOME_DIR: 0,
+    ABSOLUTE_PATH: 1,
+    RELATIVE_PATH: 2
+  }
+  const path2PathType = (path: string): number => {
+    let res = EnumPathType.RELATIVE_PATH
+    path.startsWith('~') && (res = EnumPathType.HOME_DIR)
+    path.startsWith('/') && (res = EnumPathType.ABSOLUTE_PATH)
+    path.startsWith('.') && (res = EnumPathType.RELATIVE_PATH)
+    return res
+  }
+
+  const path2PathType = pathTypeMap(path)
+  const pathType2ResolvedPath = {
+    [EnumPathType.HOME_DIR]: join(homedir(), path.slice(1)),
+    [EnumPathType.ABSOLUTE_PATH]: path,
+    [EnumPathType.RELATIVE_PATH]: join(cwd, path)
+  }  
+}
+
+// environment
+import cluster from 'node:cluster'
+
+const isPrimary = process.env.NODE_APP_INSTANCE === '0' || cluster.isPrimary
+const isDev = process.env.NODE_ENV === 'development'
+const isTest = process.env.TEST
+const isDebugMode = process.env.DEBUG_MODE === '1'
+
+// path
+import { homedir } from 'node:os'
+import { join } from 'node:path'
+
+
+const isDev2Path = (map) => resolvePath(
+  map[isDev ? 'dev' : 'prod']
+)
+
+const cwd = process.cwd()
+const homeDir = homedir()
+const tempDir = isDev2Path({
+  dev: './tmp',
+  prod: '/tmp/mx-space'
+})
+const dataDir = isDev2Path({
+  dev:  './tmp',
+  prod: '~/mx-space'
+})
+const themeDir = isDev2Path({
+  dev: './tmp/theme',
+  prod: '~/mx-space/theme'
+})
+const useAssetDir = isDev2Path({
+  dev: './tmp/assets',
+  prod: '~/mx-space/assets'
+})
+const logDir = isDevPath({
+  dev: './tmp/log',
+  prod: '~/mx-space/log'
+})
+const staticFileDir = isDevPath({
+  dev: './tmp/static',
+  prod: '~/mx-space/static'
+})
+const staticFileTrashDir = isDevPath({
+  dev: './tmp/trash',
+  prod: '/tmp/mx-space/trash'
+})
+const backupDir = isDevPath({
+  dev: './tmp/backup',
+  prod: '~/mx-space/backup'
+})
+const localAdminAssetPath = isDevPath({
+  dev: './tmp/admin',
+  prod: './admin'
+})
+const nodeRequirePath = isDevPath({
+  dev: './tmp/node_modules',
+  prod: '~/mx-space/node_modules'
+})
+
+// log: consola, logger, console.debug
+// globalThis: isDev, consola, cwd
+// json reoslve
+// database
+// dev | prod, debug, test, demo mode, port, cross domain, allow origin
+```

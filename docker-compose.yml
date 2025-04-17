@@ -1,11 +1,9 @@
-version: '3.9'
-
 services:
   postgres:
-    image: postgres:latest  # 使用轻量级 Alpine 版本
+    image: ankane/pgvector:latest  # postgres with pgvector extension pre-installed
     container_name: postgres
     environment:
-      - POSTGRES_DB=my-app      # 默认数据库名称
+      - POSTGRES_DB=test      # 默认数据库名称
       - POSTGRES_USER=dao77777        # 数据库用户名
       - POSTGRES_PASSWORD=root  # 数据库密码
       - POSTGRES_HOST_AUTH_METHOD=md5  # 启用密码认证（默认是trust，生产环境建议修改）
@@ -16,9 +14,22 @@ services:
     networks:
       - postgres_net
     restart: unless-stopped  # 容器意外停止时自动重启
-
+  pgAdmin:
+    image: dpage/pgadmin4  # pgAdmin4
+    container_name: pgAdmin
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=dao77777@qq.com
+      - PGADMIN_DEFAULT_PASSWORD=root
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin  # 数据持久化
+    ports:
+      - "5050:80"  # 主机端口:容器端口
+    networks:
+      - postgres_net
+    restart: unless-stopped  # 容器意外停止时自动重启
 volumes:
-  postgres_data:  # 定义持久化数据卷
+  postgres_data:  # postgres数据持久化
+  pgadmin_data:  # pgAdmin数据持久化
 
 networks:
   postgres_net:  # 定义专用网络

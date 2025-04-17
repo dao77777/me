@@ -1,0 +1,126 @@
+# Docker
+
+**Install**
+1. `paru -S docker`
+2. enable docker service: `systemctl enable --now docker`
+3. add user to docker group: `sudo usermod -aG docker dao77777`
+4. `sudo mkdir -p /etc/docker`
+5. add docker registry in the `/etc/docker/daemon.json`
+```json
+{
+    "registry-mirrors": ["https://nb0uivkn.mirror.aliyuncs.com"],
+    "registry-mirrors": ["https://hub-mirror.c.163.com"],
+    "registry-mirrors": ["https://docker.1ms.run"]
+}
+
+```
+6. reload docker: `systemctl daemon-reload`
+7. restart docker: `systemctl restart docker`
+8. reboot
+
+Image
+- name
+- tag
+- history
+
+**Container** 
+- **Individual**
+    - initial state
+        - environment
+        - configuration
+    - runtime state
+        - var
+        - cache
+        - log
+        - data
+- **Plural**
+    - containers
+        - add
+        - remove
+        - update
+        - query
+    - individual
+        - identity
+        - life cycle
+            - running
+            - stop
+            - pause
+        - input & output
+        - state
+            - initial state
+            - runtime state
+                - var
+                - cache
+                - log
+                - data
+- **Mapping: container `<->` host**
+    - container `<->` host_process
+    - container_port `<->` host_port
+    - container_file_system `<->` host_volume
+
+Volume
+
+
+## Command
+
+- External
+    - Registry: `/etc/docker/daemon.json`
+    ```json
+    {
+        "registry-mirrors": ["https://nb0uivkn.mirror.aliyuncs.com"],
+        "registry-mirrors": ["https://hub-mirror.c.163.com"],
+        "registry-mirrors": ["https://docker.1ms.run"]
+    }
+    ```
+    - Save: `docker image save -o <file> <image>`
+    - Export: `docker container export <container>`
+- Image
+    - Add: `docker image pull <image>`
+    - Build: `docker image build -t <image> <path>`
+    - Load: `docker image load -i <file>`
+    - Remove: `docker image rm -f <image>`
+    - Prune: `docker image prune`
+    - Tag: `docker image tag <image> <tag>`
+    - List: `docker image ls`
+    - Inspect: `docker image inspect <image>`
+- Container
+    - Commit: `docker container commit <container>`
+    - Attach: `docker container attach <container>`
+    - Wait: `docker container wait <container>`
+    - Container Management
+        - Add: `docker run --name <name> -p <host_port>:<container_port> -v <volume_name>:<container_path> -e <env> --restart always -d -- <image>`
+        - Remove: `docker container rm -f <container>`
+        - Prune: `docker container prune`
+        - Rename: `docker container rename <container>`
+        - Update: `docker container update <container>`
+        - Exec: `docker container exec -it <container> <command>`
+        - Copy: `docker container cp <container>:<path> <host_path>`
+        - List: `docker container ls -a`
+        - Inspect: `docker container inspect <container>`
+        - Related Process: `docker container top <container>`
+        - Log: `docker container logs <container>`
+        - Port: `docker container port <container>`
+        - Diff: `docker container diff <container>`
+    - Container Life Cycle
+        - Start: `docker container start <container>`
+        - Pause: `docker container pause <container>`
+        - Resume: `docker container unpause <container>`
+        - Stop: `docker container stop <container>`
+        - Kill: `docker container kill <container>`
+        - Restart: `docker container restart <container>`
+        - Status: `docker container stats <container>`
+    - Container 
+
+## Tmp
+
+- Reality
+    - host `<->` container
+    - set environment in the `run` command flag `-e`
+    - volume `<->` file system
+        - configuration
+        - var
+        - cache
+        - log
+        - data
+- Reality
+    - life cycle: running stop pause

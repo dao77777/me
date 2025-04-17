@@ -1,8 +1,7 @@
-import { config } from 'dotenv'
+import '../envConfig';
 import { OpenAI } from 'openai'
 
 beforeAll(() => {
-    config()
 })
 
 const OPEN_AI_TIME_OUT = 20000
@@ -14,7 +13,7 @@ describe('OpenAI', () => {
         console.log(`count: ${inMemory++}, ${process.env.DEEP_SEEK_API_KEY}`)
         const openai = new OpenAI({
             baseURL: 'https://api.deepseek.com',
-            apiKey: process.env.DEEP_SEEK_API_KEY
+            apiKey: process.env.DEEPSEEK_API_KEY
         })
 
         const completion = await openai.chat.completions.create({

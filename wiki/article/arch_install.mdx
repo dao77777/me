@@ -1,0 +1,476 @@
+# Arch_Install
+
+**Reference**
+- [archlinux installation guide](https://wiki.archlinux.org/title/Installation_guide)
+
+**Archlinux install process**
+1. prepare a installation media
+2. insatll [ventoy](https://www.ventoy.net/en/index.html) on the media
+3. download [archlinux iso](https://archlinux.org/download/) to the media
+4. on POST stage, configure boot order to boot from the media
+5. select archlinux iso to bootstrap
+6. keyboard layout & font set
+    - keyboard layout set
+        - `locale list-keymaps`: query keymaps
+        - `loadkeys <keymap>`: set keyboard layout
+    - font set
+        - `ls /usr/share/kbd/consolefonts/ | less`: query font
+        - `setfont <font>`: set font, usually `ter-120b`
+7. network configure: because of archlinux iso already configure the dhcp(systemd-networkd) and dns(systemd-resolved) for network, what need to do is to connect to network by ethernet(by cable) or wifi(by wireless)
+    - ethernet: plug the cable into your computer
+    - wifi: use iwctl(iwd is already set up) to connect
+        - `station list`: find out the wlan device
+        - `station <wlan> scan`: scan the network
+        - `station <wlan> get-networks`: list networks discovered above
+        - `station <wlan> connect <network_ssid>`: connect to a network you want
+8. time sync: archlinux iso already set up the time sync by systemd-timedated, when network connected, the time will be sync automatically
+9. disk partitioning
+    1. `fdisk -l`: list all disks info
+    2. `fdisk </dev/path_to_target_disk>`: partitioning to a target disk
+    3. create 3 partition: use command `n` to add
+        - esp: 1G
+        - root: 50G
+        - home: rest spaces
+    4. specify type for partition: use `t` to specify type, use `l` to query code for each type, 1 is EFI system, 23 is Linux root(x86-64), 20 is Linux filesystem
+        - esp: EFI system
+        - root: Linux root(x86_64)
+        - home: Linux filesystem
+10. filesystem assign
+    - esp: `mkfs.fat -F 32 /dev/<esp_partition>`, format esp partition to fat32
+    - root: `mkfs.ext4 /dev/<root_partition>`, format root partition to ext4
+    - home: `mkfs.ext4 /dev/<home_partition>`, format home partition to ext4
+11. mount partition
+    - esp: `mount /dev/<esp_partition> /mnt/boot --makedir`, mount esp partition to `/mnt/boot`
+    - root: `mount /dev/<root_partition> /mnt`, mount root partition to `/mnt`
+    - home: `mount /dev/<home_partition> /mnt/home --makedir`, mount home partition to `/mnt/home`
+12. base filesystem structure generate & packages install: `pacstrap -K /mnt base base-devel linux linux-lts linux-firmware grub efibootmgr less vi vim neovim git`
+    - base package: `base base-devel`
+    - kernel: `linux linux-lts linux-firmware`
+    - bootloader: `grub efibootmgr`
+    - other: `less vi vim neovim git`
+13. fstab generate: `genfstab -U /mnt >> /mnt/etc/fstab`
+14. chroot: `arch-chroot /mnt`
+15. bootloader set
+    1. install: `grub-install --target=x86_64-efi --efi-directory=esp --bootloader-id=GRUB`
+    2. install `os-prober` to enable dual boot: `pacman -S os-prober`
+    3. edit `/etc/default/grub`, uncomment `GRUB_DISABLE_OS_PROBER=false`
+    2. configure: `grub-mkconfig -o /boot/grub/grub.cfg`
+16. reboot
+17. set user and password & login common user
+    1. set root's password: `passwd`
+    2. user add: `useradd -m dao77777`
+    3. sudoer group specify: `visudo`, uncomment `# %wheel ALL=(ALL) ALL`, `usermod -aG wheel dao77777`
+    4. set user's password: `passwd dao77777`
+    6. exit & common user login
+18. pacman config & paru install
+    1. add archlinuxcn repo & uncommnet multilib section
+    ```toml
+    [archlinuxcn]
+    Server = https://mirrors.ustc.edu.cn/archlinuxcn/$arch
+    Server = https://mirrors.tuna.tsinghua.edu.cn/archlinuxcn/$arch
+    Server = https://mirrors.hit.edu.cn/archlinuxcn/$arch
+    Server = https://repo.huaweicloud.com/archlinuxcn/$arch
+    ```
+    2. sign key: `sudo pacman-key --lsign-key "farseerfc@archlinux.org"`
+    3. install archlinuxcn keyring: `sudo pacman -S archlinuxcn-keyring`
+    4. install mirrorlist tool: `sudo pacman -S reflector`
+    5. substitute mirrorlist
+    ```bash
+    sudo reflector \
+      --country China \
+      --protocol https \
+      --latest 11 \
+      --save /etc/pacman.d/mirrorlist
+    ```
+    6. sync local database: `sudo pacman -Syu`
+    7. change to home dir: `cd ~`
+    8. install cargo for paru: `sudo pacman -S cargo`
+    9. clone paru project: `git clone https://aur.archlinux.org/paru.git`
+    10. install paru: `cd paru && makepkg -si`
+    11. clean: `cd .. && rm -rf paru`
+19. network set
+    1. set hostname: `/etc/hostname`
+    2. set hosts avoid failed to connect `githubusercontent`
+    ```text
+    185.199.110.133 raw.githubusercontent.com
+    ```
+    3. for ethernet
+        1. dhcp client: `systemctl enable --now systemd-networkd`
+        2. dns resolve: `systemctl enable --now systemd-resolved`
+    4. for wlan
+        1. install iwd: `paru -S iwd impala`
+        2. edit `/etc/iwd/main.conf`
+        ```toml
+        [General]
+        EnableNetworkConfiguration=true # enable dhcp client
+
+        [Network]
+        NameResolvingService=systemd # specify dns resolving service
+        EnableIPv6=false # disable ipv6
+        ```
+        3. iwd: `systemctl enable --now iwd`
+        4. dns resolve: `systemctl enable --now systemd-resolved`
+        5. use iwctl to connect a network
+        6. if you wanna a static ip address, then edit `/var/lib/iwd/<ssid>.<type>`
+        ```toml
+        [IPv4] # static ip configure
+        Address=192.168.1.10
+        Netmask=255.255.255.0
+        Gateway=192.168.1.1
+        Broadcast=192.168.1.255
+        DNS=192.168.1.1
+        ```
+    4. configure `/etc/resolv.conf`, add `nameserver 8.8.8.8`
+20. proxy set
+    1. font install: `paru -S noto-fonts-cjk-sc-vf noto-fonts-emoji ttf-cascadia-code-nerd ttf-harmonyos-sans otf-font-awesome`
+    2. wm & terminal & browser & cloud storage & proxy install: `paru -S hyprland kitty clash-verge-rev-bin`
+    3. go into wm: `hyprland`
+    4. open clash-verge and input subscribe url
+    5. install mihomo-party: `paru -S mihomo-party-git`
+    6. reinstall hyprland: `paru -S hyprland-git`
+    7. remove clash-verge: `paru -Rns clash-verge-rev-bin`
+    8. remove archlinux repo on `/etc/pacman.conf`
+    9. remove keyring: `sudo pacman -Rns archlinuxcn-keyring`
+21. ssh
+    1. install openssh: `paru -S openssh`
+    2. enable sshd: `sudo systemctl enable --now sshd`
+    3. generate ssh key: `ssh-keygen`
+    4. browser install: `paru -S zen-browser-bin microsoft-edge-beta`
+    5. login github, add machine's ssh pub key into github
+22. time set
+    1. enable ntp client: `sudo systemctl enable --now systemd-timesyncd`
+    2. set hardware clock: `sudo hwclock --systohc --utc`
+    3. timezone set: `ln -sf /usr/share/zoneinfo/Asia/Chongqing /etc/localtime`
+23. locale
+    1. edit `/etc/locale.gen`: uncomment `#en_US.UTF-8 UTF-8` to generate locale
+    2. edit `locale-gen`: generate locales specified in `/etc/locale.gen`
+    3. edit `/etc/locale.conf`: set `LANG=en_US.UTF-8` to set system locale
+24. shell
+    1. install zsh: `paru -S zsh`
+    2. change default shell to zsh fro current user: `chsh -s $(which zsh)`
+    3. install dependencies: `paru -S starship pfetch`, zinit had been configured in `~/.zshrc` 
+25. sync from github & cloud storage
+    1. install bypy: `paru -S bypy-git`
+    2. authorize bypy: `bypy info`
+    3. sync from bypy: `bypy download _secret _secret`
+    4. add ssh key to `~/_secret/ssh`
+    5. sync from github
+        - `git clone git@github.com:dao77777/_doc.git`
+        - `git clone git@github.com:dao77777/_dotfile.git`
+        - `git clone git@github.com:dao77777/51.git ~/_code/51`
+    6. init: execute `~/_dotfile/init`
+26. set `/etc/issue`
+    1. install `figlet` to generate ascii: `paru -S figlet`
+    2. generate login ascii: `gen-login-issue`
+25. install DE software
+    - `btop usbutils`
+    - `fcitx5 fcitx5-gtk fcitx5-qt fcitx5-configtool fcitx5-chinese-addons fcitx5-material-color`
+    - `brightnessctl pipewire pipewire-pulse wireplumber bluez bluez_utils bluetui`
+        - `systemctl --user enable --now pipewire pipewire-pulse wireplumber`
+        - `systenctl enable --now bluetooth`
+    - `lsd bat zoxide fzf fd ripgrep yazi`
+    - `hyprpaper-git hyprlock-git hyprpicker-git hypridle-git wofi ags-hyprpanel-git grim slurp wf-recorder obs-studio-git mpv dolphin imagemagick imv 7zip thunderbird wps-office-cn netease-cloud-music steam gimp follow-bin visual-studio-code-bin cursor-bin`
+        - enable networkmanager to support hyprpanel: `systemctl enable --now NetworkManager`
+        - edit `/etc/NetworkManager/NetworkManager.conf` configuring using iwd as the wi-fi backend
+        ```text
+        [device]
+        wifi.backend=iwd
+        ```
+    - `wemeet-wayland-screenshare-git wireplumber libportal xdg-desktop-portal xdg-desktop-portal-hyprland-git xwaylandvideobridge opencv`
+    - `wl-clipboard cliphist`
+    - `linuxqq wechat`
+    - `nvm`
+        - `bun` install: `curl -fsSL https://bun.sh/install | bash`, how to uninstall? `rm -rf ~/.bun` & delete line related to bun in `~/.zshrc`
+        - `nodejs` install: 
+            - query available nodejs version: `nvm li-remote`
+            - install available nodejs verson: `nvm install <remote_version>`
+            - query local nodejs version: `nvm list`
+            - switch local nodejs version: `nvm use <local_version>`
+        - `pnpm` install: `npm i pnpm -g`
+        - how to use `pm2`
+            - query daemon lists: `pm2 list` 
+            - start a js project: `pm2 start "<start script>" --name <project_name>`
+            - delete a specific daemon: `pm2 delete <id | name>`
+    - `qemu-full libvirt virt-manager dnsmasq`
+        1. add user to group: `usermod -aG libvirt dao77777`
+        2. define network: `sudo virsh net-define /etc/libvirt/qemu/networks/default.xml`
+        3. autostart network: `sudo virsh net-autostart default`
+        4. start network: `sudo virsh net-start default`
+        5. set iso location to `~/_isos` & set image location to `~/_images`
+    - `postgresql`
+        1. `paru -S postgresql`
+        2. `sudo passwd postgres`
+        3. `su postgres`
+        4. `initdb --locale=C.UTF8 --encoding=UTF8 -D /var/lib/postgres/data --data-checksums`
+        5. `sudo systemctl enable --now postgresql`
+        6. `createuser --interactive`
+        7. `createdb <db_name>`
+        8. `psql -d <db_name>`
+    - `docker & docker-compose`
+        1. enable docker service: `systemctl enable --now docker`
+        2. add user to docker group: `sudo usermod -aG docker dao77777`
+        3. `sudo mkdir -p /etc/docker`
+        4. add docker registry in the `/etc/docker/daemon.json`
+        ```json
+        {
+            "registry-mirrors": ["https://nb0uivkn.mirror.aliyuncs.com"],
+            "registry-mirrors": ["https://hub-mirror.c.163.com"],
+            "registry-mirrors": ["https://docker.1ms.run"]
+        }
+        ```
+        5. reload docker: `systemctl daemon-reload`
+        6. restart docker: `systemctl restart docker`
+        7. reboot
+    
+
+
+## Boot
+
+**UEFI boot process**
+1. start UEFI
+2. UEFI runs power-on self-test(POST)
+3. boot device
+4. find .efi bootloader file in EFI system partition(ESP) according to UEFI nvram's boot order
+5. start bootloader(grub2, systemd, rEElnd, lilo) chainload
+6. end of bootloader chainload, load kernel and initramfs
+7. load device drivers, kernel modules, daemon process
+8. start initial process(systemd, sysvinit)
+
+Legacy BIOS boot process
+1. start legacy BIOS
+2. BIOS runs power-on self-test(POST)
+3. boot device
+4. load MBR boot code area
+5. chainload the bootable partition's boot sector(VBR)
+6. end of bootloader chainload, load kernel and initramfs
+7. load device drivers, kernel modules, daemon process
+8. start initial process(systemd, sysvinit)
+
+**Kernel initial process**
+1. bootloader load kernel with kernel parameters and initramfs
+2. initramfs
+  1. kernel unpack built-in initramfs into temporary rootfs
+  2. kernel unpack external initramfs specified by bootloader override early fs
+  3. consult bootloader `root=` info to mount rootfs
+  4. check `/etc/fstab` in rootfs to mount other filesystems
+3. early userspace
+4. late userspace. 
+  1. init process(systemd, sysvinit)
+  2. login
+    - getty & login
+      1. getty & login
+      2. x init -> graphical session | login shell
+    - display manager
+      1. display manager
+      2. x init -> graphical session
+
+**UEFI/BIOS**
+- Boot mode
+    - Legacy BIOS: tied to Master Boot Record (MBR) partitioning scheme, 2TB limit
+    - UEFI: use GUID Partition Table (GPT) partitioning scheme, support 2TB+ disk, support secure boot
+    - How to check boot mode?
+        - Check windows boot mode: type `Win + R`, then input `msinfo32`, then check `BIOS Mode` entry
+        - Check linux boot mode: type `ls /sys/firmware/efi/efivars`, if the directory exists, then the system is booted in UEFI mode(32 means 32 bit for UEFI, 64 means 64bit for UEFI)
+- UEFI nvram management: `efibootmgr`
+    - `sudo efibootmgr`: list entries
+    - `sudo efibootmgr -c -d /dev/sda -p 1 -L "Linux Bootloader" -l "\EFI\linux\grubx64.efi"`: add entry
+    - `sudo efibootmgr -b 0002 -B`: delete entry
+    - `sudo efibootmgr -o 0002,0001,0000`: change boot order
+
+**Bootloader**
+- Various bootloader on Various OS
+    - windows: windows boot manager
+    - macos: bootx
+    - linux: grub2, systemd, rEElnd, lilo, UEFI Shell, linux itself EFI boot stub
+- Check secure boot status: `bootctl`
+- Grub
+    - bootloader install: `paru -S grub`
+    - bootloader set: `grub-install --target=x86_64-efi --efi-directory=esp --bootloader-id=GRUB`
+    - configure: `grub-mkconfig -o /boot/grub/grub.cfg`
+    - dual boot
+        1. install `os-prober`: `paru -S prober`
+        2. edit `/etc/default/grub`, uncomment `GRUB_DISABLE_OS_PROBER=false`
+        3. `grub-mkconfig -o /boot/grub/grub.cfg`
+    - theme: install theme from internet, execute `isntall` script in it
+
+**Kernel & Initramfs & Microcode**
+- bootloader -> kernel(kernel parameters) + initramfs(mkinitcpio)
+- linux kernel: `paru -S linux linux-lts linux-firmware`
+- initramfs: ramfs, ramdisk, tmpfs, rootfs, cpio file
+
+**Disk**
+- protocol: SATA, NVMe, SCSI
+- partition: MBR disk(Legacy BIOS support), GTP disk(UEFI support)
+    - windows
+        - usual partition
+            - EFI system partition(ESP)
+            - Microsoft Reserved Partition(MSR)
+            - Recovery Partition
+            - common(ntfs): usually named `C:/`
+        - partition management: computer management -> storage -> disk management
+    - linux
+        - usual partition
+            - EFI system partition(ESP), usually mount to `/boot`(1G, type `EFI system`)
+            - swap(swap), type `Linux SWAP`
+            - common(ext4, brtfs), usually mount to `/`(50G, type `Linux root(x86-64)`) & `/home`(rest spaces, `Linux filesystem`)
+        - partition management
+            - `fdisk -l`: list all disks and corresponding typed partitions
+            - `fdisk /dev/<partition>`: partitioning specific partition
+                - `p`: print all partitions
+                - `n`: new partition
+                - `l`: query all accessible partition types
+                - `t`: type specific partition
+- file system
+    - common file system: `fat`, `ext4`, `brtfs`, `ntfs`
+    - file system management
+        - `mkfs.fat -F 32 /dev/<partition>`: turn disk to `FAT32` file system, usually used by ESP(aim for compatible)
+        - `mkfs.ext4 /dev/<partition>`: turn partition to `EXT4` file system, aim for common use
+        - `mkfs.brtfs /dev/<partition>`: turn partition to `BRTFS` file system, aim for common use
+        - `mkswap /dev/<swap_partition>`: turn partition to `SWAP` file system
+- mount
+    - `mount /dev/<partition> <mount_point> [--mkdir]`: mount partition to a mount point
+    - `swapon /dev/<swap_partition>`: create swap volume
+- base file system structure generate for root partition: `pacstrap -K <root_path> base linux linux-lts linux-firmware <other packages>`
+- `fstab` generate for root partition: `genfstab -U <root_path> > <root_path>/etc/fstab`
+- esp partition: usually mounted on `/boot`
+    - linux kernel file
+    - initramfs file & initramfs fallback file
+    - microcode
+    - bootloder
+        - `loader/`: bootloader configuration file
+        - EFI: bootloader
+            - BOOT
+                - BOOTX64.EFI: default path of executable efi file
+            - Mircrosoft
+                - Boot
+                    - bootmgfw.efi
+            - linux
+            - systemd
+                - systemd-bootx64.efi
+
+## Localization
+
+**Keyboard layout**
+- console
+    - `locale list-keymaps`: list all keymaps
+    - `loadkeys <keymap>`: set keyboard layout
+    - `/etc/vconsole.conf`: persistent keyboard layout
+
+**Input Method**
+- `paru -S`
+    - `fcitx5`, `fcitx5-gtk`, `fcitx5-qt`
+    - `fcitx5-configtool`
+    - `fcitx5-material-color`
+    - `fcitx5-chinese-addons`
+
+**Locale**
+- `/etc/locale.gen`: uncomment entries to configure locale-gen
+- `locale-gen`: generate locales specified in `/etc/locale.gen`
+- `/etc/locale.conf`: set `LANG=zh_CN.UTF-8` to set system locale
+- `/usr/share/i18n/locales`: list of locales
+- `/usr/share/i18n/charmaps`: list of charmaps
+
+**Time**
+- timezone set: `ln -sf /usr/share/zoneinfo/Asia/Chongqing /etc/localtime`
+- systemd-timedated & systemd-timesyncd
+    - `sudo systemctl enable --now systemd-timedated`
+    - `sudo systemctl enable --now systemd-timesyncd`
+- hwclock: `hwclock --systohc --utc`
+
+**Font**
+- console
+    - `/usr/share/kbd/consolefonts`: check console font lists
+    - `setfont <console_font>`: set console font
+- system
+    - `paru -S`
+        - `noto-fonts-cjk-sc-vf`
+        - `ttf-harmonyos-sans`
+        - `ttf-cascadia-code-nerd`
+        - `noto-fonts-emoji`
+        - `otf-font-awesome`
+
+## Peripheral
+
+*/Ethernet**
+- TODO
+
+**Wlan**
+- concept
+    - device: adapter -> device 
+    - Basic Service Set(BSS): identified by BSSID
+        - IBBS: ad-hoc mode
+        - Infrastructure BBS
+            - access point(ap)
+            - station
+                - known-network: can be connected automatically while without password
+                - unknown-network: usually when first connect with password
+    - ESS: Extended Service Set composed of multiple BSS, identified by SSID
+- wifi management
+    - `paru -S`
+        - `iwd`: daemon & cli for wifi management
+        - `impala`: tui for wifi management
+    - `iwd`: wifi management daemon
+        - `iwd`: daemon
+        - `iwctl`: cli
+        - `iwmon`: wifi monitor
+        - `/etc/iwd/main.conf`
+        ```toml
+        [General]
+        EnableNetworkConfiguration=true # enable dhcp client
+
+        [Network]
+        NameResolvingService=systemd # specify dns resolving service
+        EnableIPv6=false # disable ipv6
+        ```
+        - `/var/lib/iwd/<ssid>.<type>`: store network profiles
+        ```toml
+        [IPv4] # static ip configure
+        Address=192.168.1.10
+        Netmask=255.255.255.0
+        Gateway=192.168.1.1
+        Broadcast=192.168.1.255
+        DNS=192.168.1.1
+        ```
+    - `impala`: tui for iwd
+
+Graphic
+- `paru -S mesa`
+
+Audio
+- install
+    - `paru -S`
+        - `pipewire`
+        - `pipewire-pulse`
+        - `wireplumber`
+    - `systemctl --user enable --now pipewire pipewire-pulse wireplumber`
+- `wpctl`
+    - `wpctl set-mute @DEFAULT_SINK@ toggle`: toggle mute for default sink
+    - `wpctl set-volume @DEFAULT_SINK@ 5%-`: decrease volume for default sink
+    - `wpctl set-volume @DEFAULT_SINK@ 5%+`: increase volume for default sink
+    - `wpctl set-mute @DEFAULT_SOURCE@ toggle`: toggle mute for default source
+- `pauvcontrol`
+    - TODO
+
+**Bluetooth**
+- install
+    - `paru -S`
+        - `bluez`
+        - `bluez-utils`
+        - `bluetui`
+    - `systenctl enable --now bluetooth`
+- `bluetoothctl`
+    - TODO
+- `bluetui`
+    - TODO
+
+Monitor
+- install
+    - `paru -S brightnessctl`
+- `brightnessctl`
+    - `brightnessctl s 5%-`: increase 5% brightness
+    - `brightnessctl s 5%+`: decrease 5% brightness
+
+## Software
+
+Screen Capture: `grim` + `slurp`
+

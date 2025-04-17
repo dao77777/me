@@ -1,0 +1,62 @@
+# Git
+
+Initial
+- `.ignore file`
+- `git init`
+- `git clone [-b] <url> <dir>`
+
+Config git
+- `git config --global user.name dao77777`
+- `git config --global user.email dao77777@qq.com`
+- `git config --global init.defaultBranch main`
+- `git conifg --global --edit`: edit global config
+
+Track file
+- `git add <file>`
+- `git rm --cached <file>`
+
+Working space
+- `git diff`: compare working and stage
+- `git add <file>`: working -> stage
+- `git restore --staged <file>`: stage -> working
+- `git restore <file>`: working -> commit
+
+Commit
+- **branch**
+  - `git checkout -b <new_branch> <old_branch>`: create a new branch
+  - `git branch <new_branch> <commit_hash>`: create a new branch
+  - `git branch -m <old_branch_name> <new_branch_name>`: rename branch
+  - `git branch -D|-d <branch>`: delete a branch
+  - `git remote add <remote_name> <url>`: add a remote
+  - `git remote remove <remote_name>`: remove a remote
+  - `git push origin <branch:remote_branch_name>`: create a new branch in remote
+  - `git push origin -d <branch_name>`: delete a branch in remote
+  - `git push --all`: push all branches to remote
+  - `git fetch --all <--prune>`: fetch all branches from remote
+- **set upstream track**
+  - `git push -u <remote> <local_branch:remote_branch>`: set upstream track
+  - `git branch -u <remote/branch_name>`: set upstream track
+  - `git branch --unset-upstream`: unset upstream track
+- **merge**
+  - `git merge <other_branch> -m <message>`: there's some different merge way, like fast-forward, 3-way, recursive
+  - `git rebase -i --root`
+  - `git cherry-pick <commit_hash>`
+- `git commit -m <mssage>`: new_commit -> stage
+- `git commit -m <message> --amend`: modify last commit message
+- `git log --oneline --graph --all --decorate`: simplified commit history
+- `git log -p`: detailed commit history with diff
+- `git log --after="2024-12-21" --before="2024-12-25"`: filter commit history by time
+- `git log --grep="something"`: filter commit history by message
+- `git log --author="dao77777"`: filter commit history by author
+- `git log -- <file>`: filter commit history by file
+- `git log <branch1>..<branch2>`: filter commit history by branch
+
+Pointer
+- `git reset --hard <commit_hash>`: move HEAD pointer to specific commit
+- `git switch <branch_name>`: move HEAD pointer to specific branch
+- `git reflog`: pointer history
+
+Submodule
+- `git submodule add <url>`: add a submodule
+- `git submodule update --init --recursive`: clone submodule
+- `git clone --recurse-submodules <url>`: clone submodules initially

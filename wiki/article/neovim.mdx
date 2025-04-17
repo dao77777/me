@@ -1,0 +1,60 @@
+# Neovim
+
+```lua
+-- lua/config/remap
+vim.g.mapleader = " "
+vim.keymap.set("n", "<leader>pv", vim.cmd.Ex)
+
+-- after/plugin/telescope
+local buildin = require("telescope.buildin")
+vim.keymap.set("n", "<leader>pf", buildin.find_files, {})
+vim.keymap.set("n", "<C-p>", buildin.git_files, {})
+vim.keymap.set("n", "<leader>ps", function()
+  buildin.grep_string({ search = vim.fn.input("Grep > ") })
+end)
+
+-- lua/config/color.lua
+function ColorMyPencils(color)
+  color = color or "rose-pine"
+  vim.cmd.colorschem(color)
+
+  vim.api.nvim_set_hl(0, "Normal", { bg = "none" })
+  vim.api.nvim_set_hl(0, "NormalFloat", { bg = "none" })
+end
+
+ColorMyPencils()
+
+-- lua/config/packer.lua
+vim.cmd([[packadd packer.nvim]])
+
+return require("packer").startup(function(use)
+  use("wbthomason/packer.nvim")
+
+  use({
+    "nvim-telescope/telescope.nvim",
+    tag = "0.1.0",
+    requires = { { "nvim-lua/plenary.nvim" } },
+  })
+
+  use({
+    "rose-pine/neovim",
+    as = "rose-pine",
+    config = function()
+      vim.cmd("colorscheme rose-pine")
+    end,
+  })
+
+  use(
+    "nvim-treesitter/nvim-treesitter",
+    { run = ':TSUpadte' }
+  )
+end)
+```
+
+undotree, 
+
+## LSP
+
+- `williamboman/mason.nvim`
+- `williamboman/mason-lspconfig.nvim`
+- `neovim/nvim-lspconfig`

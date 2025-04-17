@@ -1,0 +1,192 @@
+# JS
+
+**Initial Install**
+- **`NVM` Install**: `paur -S nvm`
+- `NodeJs & NPM` install: 
+    - query available nodejs version: `nvm li-remote`
+    - install available nodejs verson: `nvm install <remote_version>`
+    - query local nodejs version: `nvm list`
+    - switch local nodejs version: `nvm use <local_version>`
+
+`PM2` Install: `npm i pm2 -g`
+- query daemon lists: `pm2 list` 
+- start a js project: `pm2 start "<start script>" --name <project_name>`
+- delete a specific daemon: `pm2 delete <id | name>`
+
+`PNPM` Install: `npm i pnpm -g`
+
+`Bun` Install: `npm i bun -g`
+
+`NestJs` Install: `npm i @nestjs/cli -g`
+- create project: `nest new <project_name>`
+
+## bundler
+
+parcel, webpack, esbuild, swc
+
+## Typescript
+
+**Install Tsx**: `npm i --save-dev tsx`
+
+`tsx <ts_file>`: run typescript file directly
+
+**Install Typescript**: `npm i --save-dev typescript`
+
+`tsc <ts_file>`: compile typescript file
+
+`tsc --noEmit`: type check
+
+`tsc --init`: initialize a typescript configuration
+- set root directory: `rootDir`
+- set source file
+    - path: `include`
+    - module compatible: `esModuleInterop`
+    - libs: `lib`
+    - strict mode: `stric`, `noUncheckedIndexedAccess`
+    - lib check: `skipLibCheck`
+    - comment: `removeComments`
+    - decorator: `emitDecoratorMetadata`, `experimentalDecorators`
+- set build file
+    - path: `outDir`
+    - version: `target`
+    - module: `module`
+```json
+{
+  "compilerOptions": {
+    "target": "es2021",         // set the compiled files' js version
+    "module": "commonjs",       // 
+    "outDir": "./dist",         // set the building directory
+    "rootDir": "./src",         // set the root directory
+    "esModuleInterop": true,  // import old style module in the mordern module
+    // enable strict mode
+    "stric": true,
+    "noUncheckedIndexedAccess": true,
+    "skipLibCheck": true
+  },
+  "include": [ // files gonna to be compiled
+    "src/**/*",
+    "*.d.ts"
+  ]
+}
+```
+- module: 
+- target: the target file js version
+- rootDir: set the root directory
+- outDir: build directory
+
+`tsc [-w]`: build project according to tsconfig.json and watch files change in source directory
+
+## Tmp
+
+babel, webpack, rollup, parcel, 
+
+openpanel
+
+uptime kuma
+
+caniuse.com
+
+Innei, Anthony Fu, Theo-t3, Josh tried coding
+
+trpc, grpc, graphql, restful
+
+Stack
+- lamp: linux, apache, mysql, php
+- mean: mongodb, express, angular, nodejs
+- mern: mongodb, express, react, nodejs
+- T3Stack
+- JStack
+
+zod
+
+zustand, indexdb, dexi
+
+plausible
+
+type check
+
+compiler
+
+downleveling
+
+strictness
+- strict
+- noImplicitAny
+- strictNullChecks
+
+
+type
+- boolean, string, number, function, symbol
+- array & object
+- any & unknown
+- null & undefined & never & void
+
+narrowing
+- truthiness
+    - literal
+    - type of
+    - instanceof
+    - in
+- assignment
+- type predicates: `<parameter> is <Type>`
+
+assertion
+- !
+- as
+
+interface, type
+
+- call signature: `(arg: TypeA): TypeB`
+- constructor signature: `new (arg: TypeA): TypeB`
+
+generic
+- extend
+
+modifier
+- optional
+- default
+- readonly
+
+Authentication
+- lib
+    - clerk & auth0
+    - better auth
+    - stack auth
+    - open auth
+    - nextjs auth
+    - lucia auth
+- function
+    - authentication
+        - sign in
+            - user/pass
+            - passkey
+            - oauth
+            - magic link
+        - state storage: cookie, local storage, session storage, indexdb
+            - access/refresh tokens
+            - jwt
+    - authorization
+    - UI
+
+hono, node, elysia, nitro
+
+- covariance
+- contravariance
+- invariance
+
+- instantiation-based comparison
+- structural comparison
+
+typescript, trpc, zod, nextjs, next-auth, prisma, 
+
+blob, file, formdata, type-array, stream
+
+Check your social media share previews
+- [Social share preview](socialsharepreview.com)
+- [Opengraph](opengraph.xyz)
+
+[Quick serve your local website][docs.srv.us]: `ssh srv.us -R 1:localhost:3000`
+
+Google Console
+
+crawler, rss, social
