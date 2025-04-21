@@ -1,23 +1,23 @@
-import { streamText, tool, type Message } from "ai";
+import { streamText, tool } from "ai";
 import { customAI } from "./custom-ai-provider";
 import { z } from "zod";
 import { createResource, findRelevantContent } from "./embedding";
 
 export const handlers = {
-  GET: async (req: Request) => { },
+  GET: async (req: Request) => {},
   POST: async (req: Request) => {
     console.log('[Chat] LLM request start');
-    const { messages }: { messages: Message[] } = await req.json();
-    // console.debug(JSON.stringify(messages, null, 2));
-    (messages as any[]).forEach((i: any) => console.log(i.experimental_attachments));
+    const { messages } = await req.json();
+    console.debug(messages);
+    // (messages as any[]).forEach((i: any) => console.log(i.experimental_attachments));
     const result = streamText({
-      model: customAI("deepseek-reasoner"),
+      model: customAI("glm-4v-plus-0111"),
       messages,
       // temperature: 0.,
       maxSteps: 10,
-      //   system: `You are a helpful assistant. Check your knowledge base before answering any questions.
-      // Only respond to questions using information from tool calls.
-      // if no relevant information is found in the tool calls, respond, "Sorry, I don't know."`,
+    //   system: `You are a helpful assistant. Check your knowledge base before answering any questions.
+    // Only respond to questions using information from tool calls.
+    // if no relevant information is found in the tool calls, respond, "Sorry, I don't know."`,
       tools: {
         // getLocation: tool({
         //   description: `Query the user's location based on their IP address.`,
@@ -106,12 +106,12 @@ export const handlers = {
         // }),
       },
       onChunk: (chunk) => {
-        console.log('[Chat] chunk');
-        console.log('[Chat] ', chunk);
+        // console.log('[Chat] chunk');
+        // console.log('[Chat] ', chunk);
       },
       onError: (error) => {
-        console.log('[Chat] error');
-        console.error('[Chat] ', error);
+        // console.log('[Chat] error');
+        // console.error('[Chat] ', error);
       },
       onFinish: (result) => {
         // console.log('[Chat] Finish');

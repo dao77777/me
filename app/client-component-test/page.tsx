@@ -2,61 +2,34 @@
 
 import { InfiniteData, queryOptions, useInfiniteQuery, useMutation, useQueries, useQuery, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { divide, set } from "lodash";
-import { FC, ReactNode, useEffect, useRef, useState } from "react";
-
-const getListByCursor = async (cursor: number, size: number) => {
-  console.log(`getListByCursor, cursor: ${cursor}, size: ${size}`);
-  type Data = {
-    id: number,
-    val: string
-  }
-  const data: Data[] = new Array(1000).fill(0).map((_, i) => {
-    const padIndex = i.toString().padStart(4, "0");
-    const randomChar = String.fromCharCode(Math.floor(Math.random() * 26) + 97);
-    return { id: i, val: `${padIndex}: ${randomChar}` };
-  });
-  const targetData = data.slice(cursor + 1, cursor + size + 1);
-  return await new Promise<Data[]>(resolve => setTimeout(() => resolve(targetData), 1000));
-}
+import { FC, ReactNode, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 export default function ClientComponentTest() {
-  const [isMount, setIsMount] = useState(false);
-
-  return (
-    <Navigator>
-      <button
-        className="bg-black hover:bg-gray-800 rounded-sm p-2 text-white cursor-pointer transition-all flex items-center justify-between"
-        onClick={() => setIsMount(!isMount)}
-      >
-        <div className="text-sm text-gray-300 font-bold">Switch Component </div>
-        <div className={`${isMount ? "text-green-400" : "text-red-400"} text-lg font-bold w-10`}>{isMount ? "On" : "Off"}</div>
-      </button>
-      <div className="w-[800px] flex gap-2">
-        <div className="w-1/2 rounded-sm p-4 bg-gray-100 shadow">
-          <QueryComponent />
-        </div>
-        <div className="w-1/2 rounded-sm p-4 bg-gray-100 shadow">
-          {isMount ? <QueryComponent /> : <div className="w-full h-full flex items-center justify-center text-xl font-bold text-gray-300">Unmounted</div>}
-        </div>
-      </div>
-      <InfiniteQueryComponent />
-    </Navigator>
-  )
-};
-
-const Navigator: FC<{ children: ReactNode }> = ({ children }) => {
   const pages = [
-    "CommonQuery",
-    "InfiniteQuery",
-    "Custom1",
+    "QueryTest",
+    "PagenationQueryTest",
+    "InfiniteQueryTest",
+    "SuspenseTest",
     "Custom2",
     "Custom3",
     "Custom4",
     "Custom5",
     "Custom6",
   ];
-
   const [pointer, setPointer] = useState(0);
+
+  return (
+    <Navigator pages={pages} pointer={pointer} onPointerChange={setPointer}>
+      {pages[pointer] === "QueryTest" && <QueryTest />}
+      {pages[pointer] === "PagenationQueryTest" && <PagenationQueryTest />}
+      {pages[pointer] === "InfiniteQueryTest" && <InfiniteQueryTest />}
+      {pages[pointer] === "SuspenseTest" && <SuspenseTest />}
+      <div className="w-full h-40"></div>
+    </Navigator>
+  )
+};
+
+const Navigator: FC<{ children: ReactNode, pages: string[], pointer: number, onPointerChange: (pointer: number) => void }> = ({ children, pages, pointer, onPointerChange }) => {
   const [lPages, setLPages] = useState([
     { idx: Math.random().toString(36).slice(2, 9), pointer: (pointer + pages.length - 2) % pages.length, active: false },
     { idx: Math.random().toString(36).slice(2, 9), pointer: (pointer + pages.length - 1) % pages.length, active: true },
@@ -71,7 +44,7 @@ const Navigator: FC<{ children: ReactNode }> = ({ children }) => {
   const rPageActiveIdx = rPages.findIndex(i => i.active);
   const animateTimeoutIdRef = useRef<null | NodeJS.Timeout>(null);
 
-  const onPointerChange = (newPointer: number) => {
+  const onPointerChangeEvent = (newPointer: number) => {
     animateTimeoutIdRef.current && clearTimeout(animateTimeoutIdRef.current);
     const prevPointer = (newPointer - 1 + pages.length) % pages.length;
     const nextPointer = (newPointer + 1) % pages.length;
@@ -112,40 +85,74 @@ const Navigator: FC<{ children: ReactNode }> = ({ children }) => {
 
   const onForward = () => {
     const newPointer = (pointer - 1 + pages.length) % pages.length;
-    setPointer(newPointer);
     onPointerChange(newPointer);
+    onPointerChangeEvent(newPointer);
   }
 
   const onBackward = () => {
     const newPointer = (pointer + 1) % pages.length;
-    setPointer(newPointer);
     onPointerChange(newPointer);
+    onPointerChangeEvent(newPointer);
   }
 
   const onSpecificNavigate = (pointer: number) => {
-    setPointer(pointer);
     onPointerChange(pointer);
+    onPointerChangeEvent(pointer);
   }
 
+  const ref = useRef(new Map<number, HTMLElement>());
+  const [sideBarWidth, setSideBarWidth] = useState(0);
+
+  useEffect(() => {
+    const maxWidth = ref.current.values().reduce((acc, el) => Math.max(el.getBoundingClientRect().width, acc), 0);
+    setSideBarWidth(maxWidth);
+  }, [pointer]);
+
+  console.log("sideBarWidth", sideBarWidth);
+
   return (
-    <div className="w-full h-full flex justify-center">
-      <div className="w-[1000px] h-full border-[1px]">
+    <div className="w-full">
+      <div className="w-[1000px] min-h-screen m-auto border-x-[1px] border-gray-100/90">
         {children}
       </div>
-      <div className="absolute left-0 top-0 w-40 h-full border-r-[1px] shadow-lg border-gray-100 bg-gradient-to-r from-white to-white/0 flex flex-col items-center justify-center backdrop-blur-sm gap-2">
+      <div className="fixed left-0 top-0 w-60 h-full border-r-[1px] border-r-gray-100/90 shadow-md hover:shadow-lg hover:shadow-gray-200/90 shadow-gray-100/90 transition-all border-gray-100 bg-gradient-to-r from-white to-white/0 flex flex-col items-center justify-center backdrop-blur-sm gap-2">
         {pages.map((page, idx) => (
           <div
             key={idx}
             className={`
-              w-full py-2 text-center text-sm text-gray-400 hover:text-gray-400 hover:bg-gray-100 hover:animate-pulse cursor-pointer
+              w-full py-2 px-4 text-center text-sm text-gray-400 hover:text-gray-400 hover:bg-gray-100 hover:animate-pulse cursor-pointer
               ${idx === pointer ? "underline font-bold text-xl text-gray-600" : ""}
               transition-all
             `}
             onClick={() => onSpecificNavigate(idx)}
+            ref={(el) => {
+              ref.current.set(idx, el!);
+              return () => { ref.current.delete(idx) };
+            }}
           >{page}</div>
         ))}
+        <div className="absolute left-0 top-0 w-full py-2 group flex flex-col items-center justify-center bg-black/0 hover:bg-black/90 rounded-xs transition-all duration-240 cursor-pointer">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 100 50"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            className="w-15 text-gray-600/90 drop-shadow drop-shadow-gray-600/90 group-hover:text-white/90 group-hover:drop-shadow-white/90 duration-1000"
+          >
+            <path d="
+              M20,25
+              a15,15 0 1,1 30,0
+              a15,15 0 1,1 30,0
+              a15,15 0 1,1 -30,0
+              a15,15 0 1,1 -30,0
+            "
+            />
+          </svg>
+          <div className="text-gray-600/90 text-xs font-bold group-hover:text-white/90 text-shadow-lg text-shadow-gray-600/90 group-hover:text-shadow-white/90 transition-all duration-1000">Non-Infinite</div>
+        </div>
       </div>
-      <div className="absolute bottom-0 left-0 w-full h-40 bg-gradient-to-t from-white to-white/0 flex justify-center">
+      <div className="fixed bottom-0 left-0 w-full h-40 bg-gradient-to-t from-white to-white/0 flex justify-center">
         <div className="w-[400px] flex items-center justify-between">
           <div className="group cursor-pointer flex flex-col items-end select-none" onClick={onForward}>
             <svg
@@ -209,78 +216,32 @@ const Navigator: FC<{ children: ReactNode }> = ({ children }) => {
           </div>
         </div>
       </div>
-      <div className="w-5 h-5 rounded-full bg-amber-400 border-4 border-amber-200 shadow-lg shadow-amber-800 absolute bottom-5 right-5 cursor-pointer hover:animate-pulse hover:scale-150 transition-all"></div>
+      <div className="fixed w-5 h-5 rounded-full bg-amber-400 border-4 border-amber-200 shadow-lg shadow-amber-800 bottom-5 right-5 cursor-pointer hover:animate-pulse hover:scale-150 transition-all"></div>
     </div>
   )
 }
 
-const InfiniteQueryComponent: FC = () => {
-  const [isErrorQuery, setIsErrorQuery] = useState(false);
-  const { data, error, status, fetchStatus, refetch, fetchPreviousPage, fetchNextPage } = useInfiniteQuery<
-    { id: number, val: string }[],
-    Error,
-    InfiniteData<{ id: number, val: string }[], { cursor: number, size: number }>,
-    string[],
-    { cursor: number, size: number }
-  >({
-    queryKey: ["infinite"],
-    queryFn: async ({ pageParam }) => {
-      if (isErrorQuery) {
-        return new Promise((resolve, reject) => {
-          setTimeout(() => {
-            reject(new Error("Infinite Query Error"));
-          }, 1000);
-        })
-      }
-      return await getListByCursor(pageParam.cursor, pageParam.size);
-    },
-    initialPageParam: { cursor: 500, size: 10 },
-    getNextPageParam: (lastPage, pages) => {
-      return {
-        cursor: lastPage[lastPage.length - 1].id,
-        size: 10
-      };
-    },
-  })
-
-  console.log(data);
+const QueryTest = () => {
+  const [isMount, setIsMount] = useState(false);
 
   return (
-    <>
+    <div className="box-border w-full p-4 flex flex-col items-start gap-4">
       <button
-        className="relative shadow rounded-xs bg-black/90 hover:bg-gray-800/90 p-2 text-white flex flex-col items-start cursor-pointer transition-all"
+        className="bg-black hover:bg-gray-800 rounded-sm p-2 text-white cursor-pointer transition-all flex items-center justify-between"
+        onClick={() => setIsMount(!isMount)}
       >
-        <span className={`text-base font-bold ${isErrorQuery ? "text-amber-400/90" : "text-lime-400/90 text-shadow-xl text-shadow-lime-400"}`}>{isErrorQuery ? "Error Query" : "Common Query"}</span>
-        <span
-          className="
-          absolute right-0 bottom-0 translate-1/2 
-          text-xs text-gray-800/60 hover:text-gray-800/65 bg-white/60 hover:bg-white/65 border-[1px] border-gray-200/60 hover:border-gray-200/65 backdrop-blur-xs p-1 rounded-xs transition-all"
-        >Switch</span>
+        <div className="text-sm text-gray-300 font-bold">Switch Component </div>
+        <div className={`${isMount ? "text-green-400" : "text-red-400"} text-lg font-bold w-10`}>{isMount ? "On" : "Off"}</div>
       </button>
-      <div>status: {status}</div>
-      <div>fetchStatus: {fetchStatus}</div>
-      <div className="w-60 rounded-sm border-[1px] p-2 h-52 overflow-auto">
-        {data?.pages.map((page, i) => (
-          <div key={i}>
-            <div className="w-full h-2"></div>
-            {`index: ${i}, cursor: ${data?.pageParams[i].cursor}`}
-            <br />
-            {
-              page.map(item => (
-                <div key={item.id}>{item.val}</div>
-              ))
-            }
-            <div className="w-full h-2"></div>
-            <hr />
-          </div>
-        ))}
-        <div className="w-full h-2"></div>
-        <div
-          className="w-full text-center py-2 text-gray-400 hover:bg-gray-100 text-sm cursor-pointer transition-all"
-          onClick={() => fetchNextPage()}
-        >Load More</div>
+      <div className="w-full flex gap-2">
+        <div className="w-1/2 rounded-sm p-4 bg-gray-100 shadow">
+          <QueryComponent />
+        </div>
+        <div className="w-1/2 rounded-sm p-4 bg-gray-100 shadow">
+          {isMount ? <QueryComponent /> : <div className="w-full h-full flex items-center justify-center text-xl font-bold text-gray-300">Unmounted</div>}
+        </div>
       </div>
-    </>
+    </div>
   )
 }
 
@@ -354,56 +315,54 @@ const QueryComponent: FC = () => {
 
   return (
     <div className="text-gray-700">
-      {`data: ${data}`}
+      {`Data: ${data}`}
       <br />
-      {`isPlaceholderData: ${isPlaceholderData}`}
+      {`DataUpdatedAt: ${dataUpdatedAt}`}
       <br />
-      {`dataUpdatedAt: ${dataUpdatedAt}`}
+      {`IsPlaceholderData: ${isPlaceholderData}`}
       <br />
-      {`isStale: ${isStale}`}
+      {`IsStale: ${isStale}`}
       <br />
-      {`error: ${error?.message ?? "no error"}`}
+      {`ErrorUpdateCount: ${errorUpdateCount}`}
       <br />
-      {`errorUpdatedAt: ${errorUpdatedAt}`}
+      {`Error: ${error?.message ?? "no error"}`}
       <br />
-      {`errorUpdateCount: ${errorUpdateCount}`}
+      {`ErrorUpdatedAt: ${errorUpdatedAt}`}
       <br />
-      {`failureReason: ${failureReason?.message ?? "no failure"}`}
+      {`IsLoadingError: ${isLoadingError}`}
       <br />
-      {`failureCount: ${failureCount}`}
+      {`IsRefetchError: ${isRefetchError}`}
       <br />
       {
-        `status: ${status === "pending"
+        `Status: ${status === "pending"
           ? "pending..."
           : status === "success"
             ? `success`
             : `error`}`
       }
       <br />
-      {
-        `isLoadingError: ${isLoadingError}`
-      }
-      <div className="w-full h-2"></div>
+      <div className="w-full h-1"></div>
+      <br />
+      {`IsFetched: ${isFetched}`}
+      <br />
+      {`IsFetchedAfterMount: ${isFetchedAfterMount}`}
       <br />
       {
-        `fetchStatus: ${fetchStatus === "fetching"
+        `FetchStatus: ${fetchStatus === "fetching"
           ? "fetching..."
           : fetchStatus === "idle"
             ? "idle"
             : "paused"}`
       }
       <br />
-      {
-        `isLoading: ${isLoading}`
-      }
+      {`IsLoading: ${isLoading}`}
       <br />
-      {
-        `isFetched: ${isFetched}`
-      }
+      {`IsRefetching: ${isRefetching}`}
+      <div className="w-full h-1"></div>
       <br />
-      {
-        `isFetchedAfterMount: ${isFetchedAfterMount}`
-      }
+      {`FailureReason: ${failureReason?.message ?? "no failure"}`}
+      <br />
+      {`FailureCount: ${failureCount}`}
       <div className="w-full h-2"></div>
       <div className="flex gap-2">
         <button className="cursor-pointer bg-black hover:bg-gray-800 rounded-sm text-white p-2" onClick={() => refetch()}>refetch</button>
@@ -416,6 +375,303 @@ const QueryComponent: FC = () => {
         </button>
       </div>
       <div className="w-full h-2"></div>
+    </div>
+  )
+}
+
+const getPagenationQueryTestData = (page: number, size: number) => {
+  type User = {
+    id: string,
+    name: string,
+    address: string,
+    phone: string,
+    email: string
+  }
+  const ds: User[] = new Array(1000).fill(0).map((_, i) => {
+    const rc1 = String.fromCharCode(Math.floor(Math.random() * 26) + 97);
+    const rc2 = String.fromCharCode(Math.floor(Math.random() * 26) + 97);
+    const rc3 = String.fromCharCode(Math.floor(Math.random() * 26) + 97);
+    const rc4 = String.fromCharCode(Math.floor(Math.random() * 26) + 97);
+    const id = Math.random().toString(36).slice(2, 9);
+    return {
+      id,
+      name: rc1,
+      address: rc2,
+      phone: rc3,
+      email: rc4,
+    }
+  });
+  return new Promise<User[]>((resolve) => {
+    setTimeout(() => {
+      resolve(ds.slice((page - 1) * size, page * size));
+    }, 500);
+  });
+}
+
+const PagenationQueryTest: FC = () => {
+  const [page, setPage] = useState(1);
+
+  const {
+    data, dataUpdatedAt, isStale, isPlaceholderData, errorUpdateCount, error, errorUpdatedAt, isLoadingError, isRefetchError, status,
+    isFetched, isFetchedAfterMount, fetchStatus, isLoading, isRefetching,
+    failureReason, failureCount
+  } = useQuery({
+    queryKey: ["pagenation", page] as const,
+    queryFn: async ({ queryKey }) => {
+      return getPagenationQueryTestData(queryKey[1], 10)
+    }
+  })
+
+  return (
+    <div className="w-full">
+      <div className="p-4 w-full"><div className="relative group w-full shadow shadow-gray-100/90 rounded-xs border-[1px] border-gray-100/90 p-4 hover:shadow-lg hover:shadow-gray-200/90 transition-all bg-gradient-to-tl from-white/90 to-gray-200/90 from-80%">
+        <div className="absolute top-0 left-0 -translate-1/3 w-5 h-5 bg-gray-800/10 rotate-30 rounded-xs group-hover:rotate-90 transition-all"></div>
+        {/* <div className="absolute left-0 top-0 -translate-1/3 w-8 h-8 bg-gray-800/10 rounded-xs rotate-60 transition-all group-hover:rotate-0"></div> */}
+        <div className="w-full flex justify-between text-gray-800/90 font-bold py-2 border-b-[1px] border-gray-400/90">
+          <div className="w-40">Id</div>
+          <div className="w-40">Name</div>
+          <div className="w-40">Phone</div>
+          <div className="w-40">Email</div>
+          <div className="w-40">Address</div>
+        </div>
+        <div className="w-full flex flex-col gap-2 pt-4">
+          {data?.map(item => (
+            <div key={item.id} className="w-full flex justify-between text-gray-600">
+              <div className="w-40">{item.id}</div>
+              <div className="w-40">{item.name}</div>
+              <div className="w-40">{item.phone}</div>
+              <div className="w-40">{item.email}</div>
+              <div className="w-40">{item.address}</div>
+            </div>
+          ))}
+        </div>
+      </div></div>
+    </div>
+  )
+}
+
+const getListByCursor = async (cursor: number, size: number, direction: "forward" | "backward") => {
+  console.log(`getListByCursor, cursor: ${cursor}, size: ${size}`);
+  type Data = {
+    id: number,
+    val: string
+  }
+  const data: Data[] = new Array(1000).fill(0).map((_, i) => {
+    const padIndex = i.toString().padStart(4, "0");
+    const randomChar = String.fromCharCode(Math.floor(Math.random() * 26) + 97);
+    return { id: i, val: `${padIndex}: ${randomChar}` };
+  });
+  const targetData = data.slice(direction === "forward" ? cursor + 1 : cursor - size, direction === "forward" ? cursor + size + 1 : cursor);
+  return await new Promise<Data[]>(resolve => setTimeout(() => resolve(targetData), 500));
+}
+
+const InfiniteQueryTest: FC = () => {
+  const [isErrorQuery, setIsErrorQuery] = useState(false);
+  const {
+    errorUpdateCount, data, dataUpdatedAt, isStale, isPlaceholderData, error, errorUpdatedAt, hasNextPage, hasPreviousPage, status, isFetchNextPageError, isFetchPreviousPageError, isLoadingError, isRefetchError,
+    isFetched, isFetchedAfterMount, fetchStatus, isLoading, isRefetching, isFetchingNextPage, isFetchingPreviousPage,
+    failureReason, failureCount,
+    refetch, fetchPreviousPage, fetchNextPage
+  } = useInfiniteQuery<
+    { id: number, val: string }[],
+    Error,
+    InfiniteData<{ id: number, val: string }[], { cursor: number, size: number, direction: "forward" | "backward" }>,
+    string[],
+    { cursor: number, size: number, direction: "forward" | "backward" }
+  >({
+    queryKey: ["infinite"],
+    queryFn: async ({ pageParam }) => {
+      if (isErrorQuery) {
+        return new Promise((resolve, reject) => {
+          setTimeout(() => {
+            reject(new Error("Infinite Query Error"));
+          }, 1000);
+        })
+      }
+      return await getListByCursor(pageParam.cursor, pageParam.size, pageParam.direction);
+    },
+    initialPageParam: { cursor: 500, size: 10, direction: "forward" },
+    getPreviousPageParam: (firstPage, pages) => {
+      return {
+        cursor: firstPage[0].id,
+        direction: "backward",
+        size: 10
+      }
+    },
+    getNextPageParam: (lastPage, pages) => {
+      return {
+        cursor: lastPage[lastPage.length - 1].id,
+        direction: "forward",
+        size: 10,
+      };
+    },
+    staleTime: 10000
+  })
+
+  const onScroll = () => {
+    const isBottom = window.scrollY + window.innerHeight + 10 > document.documentElement.scrollHeight;
+    console.log(`${isBottom}, ${!isFetchingNextPage}`);
+    if (isBottom && !isFetchingNextPage) fetchNextPage();
+  }
+  const onScrollRef = useRef(onScroll); onScrollRef.current = onScroll;
+
+  useEffect(() => {
+    window.addEventListener("scroll", onScrollRef.current);
+    return () => {
+      window.removeEventListener("scroll", onScrollRef.current);
+    }
+  }, [])
+
+  return (
+    <div className="relative box-border w-full flex flex-col items-start gap-4">
+      <div className="sticky z-10 top-0 left-0 w-full px-4 py-4 flex items-start justify-between backdrop-blur-sm bg-white/60 border-b-[1px] border-gray-200/60">
+        <div className="w-40 flex flex-col items-start gap-4">
+          <button
+            className="border-[1px] border-gray-100/90 active:scale-95 shadow-md relative rounded-xs bg-white/90 hover:bg-gray-100/90 p-2 text-white flex flex-col items-start cursor-pointer transition-all"
+            onClick={() => setIsErrorQuery(!isErrorQuery)}
+          >
+            <div className={`absolute left-0 top-0 w-[2px] h-full ${isErrorQuery ? "bg-amber-400" : "bg-lime-400"}`}></div>
+            <div className={`absolute left-[2px] top-0 w-[2px] h-full ${isErrorQuery ? "bg-amber-200" : "bg-lime-200"}`}></div>
+            <div className={`absolute left-[4px] top-0 w-[2px] h-full ${isErrorQuery ? "bg-amber-100" : "bg-lime-100"}`}></div>
+            <span className={`text-base font-bold ${isErrorQuery ? "text-amber-400/90" : "text-lime-400/90"}`}>{isErrorQuery ? "Error Query" : "Common Query"}</span>
+            <span
+              className="
+                absolute right-0 bottom-0 translate-1/2 
+                text-xs text-gray-800/60 hover:text-gray-800/65 bg-white/60 hover:bg-white/65 border-[1px] border-gray-200/60 hover:border-gray-200/65 backdrop-blur-xs p-1 rounded-xs transition-all"
+            >Switch</span>
+          </button>
+          <button
+            className="relative shadow border-[1px] border-gray-100/90 p-2 text-gray-600/90 rounded-xs cursor-pointer font-bold transition-all bg-white/90 hover:bg-gray-100/90 active:scale-95"
+            onClick={() => isFetchingPreviousPage || fetchPreviousPage()}
+          >
+            <div className="absolute left-0 top-0 w-[2px] h-full bg-gray-600/90"></div>
+            <div className="absolute left-[2px] top-0 w-[2px] h-full bg-gray-400/90"></div>
+            <div className="absolute left-[4px] top-0 w-[2px] h-full bg-gray-200/90"></div>
+            {isFetchingPreviousPage ? "Fetching..." : "FetchPreviousPage"}
+          </button>
+          <button
+            className="relative shadow border-[1px] border-gray-100/90 rounded-xs p-2 bg-white/90 text-gray-600 font-bold cursor-pointer hover:bg-gray-100/90 active:scale-95 transition-all"
+            onClick={() => isFetchingNextPage || fetchNextPage()}
+          >
+            <div className="absolute left-0 top-0 w-[2px] h-full bg-gray-600/90"></div>
+            <div className="absolute left-[2px] top-0 w-[2px] h-full bg-gray-400/90"></div>
+            <div className="absolute left-[4px] top-0 w-[2px] h-full bg-gray-200/90"></div>
+            {isFetchingNextPage ? "Fetching..." : "FetchNextPage"}
+          </button>
+          <button
+            className="relative shadow border-[1px] border-gray-100/90 rounded-xs p-2 bg-white/90 text-gray-600 font-bold cursor-pointer hover:bg-gray-100/90 active:scale-95 transition-all"
+            onClick={() => fetchStatus === "fetching" && !isFetchingPreviousPage && !isFetchingNextPage || refetch()}
+          >
+            <div className="absolute left-0 top-0 w-[2px] h-full bg-gray-600/90"></div>
+            <div className="absolute left-[2px] top-0 w-[2px] h-full bg-gray-400/90"></div>
+            <div className="absolute left-[4px] top-0 w-[2px] h-full bg-gray-200/90"></div>
+            {fetchStatus === "fetching" && !isFetchingPreviousPage && !isFetchingNextPage ? "Fetching.." : "Fetch"}
+          </button>
+        </div>
+        <div className="text-sm text-gray-400 w-52">
+          {`DataUpdatedAt: ${dataUpdatedAt}`} <br />
+          {`IsPlaceholderData: ${isPlaceholderData}`} <br />
+          {`IsStale: ${isStale}`} <br />
+          {`HasPreviousPage: ${hasPreviousPage}`} <br />
+          {`HasNextPage: ${hasNextPage}`} <br />
+          {`ErrorUpdateCount: ${errorUpdateCount}`} <br />
+          {`Error: ${error?.message ?? "No Error"}`} <br />
+          {`ErrorUpdatedAt: ${errorUpdatedAt}`} <br />
+          {`IsLoadingError: ${isLoadingError}`} <br />
+          {`IsRefetchError: ${isRefetchError}`} <br />
+          {`IsFetchNextPageError: ${isFetchNextPageError}`} <br />
+          {`IsFetchPreviousPageError: ${isFetchPreviousPageError}`} <br />
+          {`Status: ${status}`} <br />
+        </div>
+        <div className="text-sm text-gray-400 w-52">
+          {`IsFetched: ${isFetched}`} <br />
+          {`IsFetchedAfterMount: ${isFetchedAfterMount}`} <br />
+          {`FetchStatus: ${fetchStatus}`} <br />
+          {`IsLoading: ${isLoading}`} <br />
+          {`IsRefetching: ${isRefetching}`} <br />
+          {`IsFetchingNextPage: ${isFetchingNextPage}`} <br />
+          {`IsFetchingPreviousPage: ${isFetchingPreviousPage}`} <br />
+        </div>
+        <div className="text-sm text-gray-400 w-52">
+          {`FailureReason: ${failureReason?.message ?? "No Failure"}`} <br />
+          {`FailureCount: ${failureCount}`} <br />
+        </div>
+      </div>
+      <div className="w-full px-4">
+        <div className="relative z-0 group w-full rounded-xs border-[1px] border-gray-100/90 shadow shadow-gray-100/90 p-4 text-gray-600/90 hover:shadow-gray-200/90 hover:shadow-lg transition-all bg-gradient-to-tl from-white/90 to-gray-200/90 from-80%">
+          <div className="absolute left-0 top-0 -translate-1/3 w-5 h-5 bg-gray-800/10 rotate-30 group-hover:rotate-90 transition-all"></div>
+          <div className="w-full flex justify-between text-gray-800 font-bold border-b-[1px] border-gray-400 mb-4 py-2">
+            <div className="w-40">Id</div>
+            <div className="w-40">Value</div>
+          </div>
+          {data?.pages.map((page, i) => (
+            <div className="relative z-0 flex flex-col gap-2" key={i}>
+              <div className="absolute top-1/2 left-1/2 -translate-1/2 w-full text-gray-200/90 text-2xl font-bold flex justify-center gap-10">
+                <span>{`Index: ${i}`}</span>
+                <span>{`Cursor: ${data?.pageParams[i].cursor}`}</span>
+                <span>{`Direction: ${data?.pageParams[i].direction}`}</span>
+              </div>
+              {
+                page.map(item => (
+                  <div key={item.id} className="w-full flex justify-between">
+                    <div className="w-40">{item.id}</div>
+                    <div className="w-40">{item.val}</div>
+                  </div>
+                ))
+              }
+              <div className="w-full h-2"></div>
+              <div className="w-full h-[1px] bg-gray-100" />
+              <div className="w-full h-2"></div>
+            </div>
+          ))}
+          <div className="w-full h-2"></div>
+          <div
+            className="w-full text-center py-2 text-gray-400/90 hover:bg-gray-100/90 text-sm hover:animate-pulse cursor-pointer transition-all"
+            onClick={() => fetchNextPage()}
+          >{isFetchingNextPage || isLoading ? "Loading..." : "Load More"}</div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+const SuspenseComponent = () => {
+  const [isSuspense, setIsSuspense] = useState(false);
+
+  if (isSuspense) {
+    throw new Promise(() => { });
+  }
+
+  const onClick = () => {
+    setIsSuspense(true);
+    setTimeout(() => {
+      setIsSuspense(false);
+    }, 2000);
+  }
+
+  return (
+    <div>
+      <div className="text-gray-600/90">Suspense Component</div>
+      <div className="w-full h-4"></div>
+      <button
+        className="relative shadow shadow-gray-200/90 rounded-xs border-[1px] border-gray-100/90 p-2 bg-white/90 text-gray-600 font-bold cursor-pointer hover:bg-gray-100/90 active:scale-95"
+        onClick={onClick}
+      >
+        <div className="absolute left-0 top-0 w-[2px] h-full bg-gray-600/90"></div>
+        <div className="absolute left-[2px] top-0 w-[2px] h-full bg-gray-400/90"></div>
+        <div className="absolute left-[4px] top-0 w-[2px] h-full bg-gray-200/90"></div>
+        Click Me To Suspense
+      </button>
+    </div>
+  )
+}
+
+const SuspenseTest = () => {
+  return (
+    <div className="p-4">
+      <Suspense fallback={<div className="text-gray-600/90">Loading...</div>}>
+        <SuspenseComponent />
+      </Suspense>
     </div>
   )
 }

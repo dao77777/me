@@ -6,7 +6,6 @@ import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { markdownToHtml } from '@/lib/utils';
 import _ from 'lodash';
-// import aiIcon from '@/public/ai-icon.svg';
 
 export default function Chat() {
   const { messages, input, handleInputChange, handleSubmit, stop, status, error } = useChat();
@@ -29,7 +28,6 @@ export default function Chat() {
       setHtmlMessages(convertedMessages);
     };
 
-    console.log(messages);
     convertMessages();
     return () => {
       isSet = false;
@@ -37,17 +35,8 @@ export default function Chat() {
   }, [messages]);
 
   return (
-    <div className=" 
-      relative 
-      w-full h-full 
-      bg-white 
-      overflow-auto custom-scrollbar
-    ">
-      <div className="
-        m-auto
-        w-3xl pb-20
-        flex flex-col 
-      ">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-white">
+      <div className="flex flex-col w-full max-w-2xl bg-white shadow-md rounded-lg border border-gray-200 overflow-hidden">
         {/* Header */}
         <div className="border-b border-gray-300 px-6 py-4">
           <h1 className="text-lg font-semibold text-gray-800">AI Chat</h1>
@@ -55,42 +44,43 @@ export default function Chat() {
         </div>
 
         {/* Messages */}
-        <div className="
-          px-6 py-4 
-          space-y-6
-        ">
+        <div className="flex-1 overflow-y-auto px-6 py-4 space-y-6">
           {messages.map((m) => (
             <div
               key={m.id}
-              className="
-                p-4 rounded-md
-                flex items-start gap-4
-                transition-all duration-200 
-              "
+              className={`flex items-start space-x-4 p-4 rounded-lg border transition-transform duration-200 ${
+                m.role === 'user'
+                  ? 'border-gray-300 bg-gray-50 self-end hover:scale-105 hover:shadow-md'
+                  : 'border-gray-200 bg-gray-100 self-start hover:scale-105 hover:shadow-md'
+              }`}
             >
-              {/* icon */}
+              {/* 图标 */}
               <div className="flex-shrink-0">
-                <div className="
-                    w-10 h-10 p-0 rounded-full custom-border
-                    flex items-center justify-center
-                  ">
-                  <Image
-                    src={m.role === "user" ? "/user-icon.svg" : "/ai-icon.svg"}
-                    alt={m.role === "user" ? "User" : "AI"}
-                    width={24}
-                    height={24}
-                  />
-                </div>
+                {m.role === 'user' ? (
+                  <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center">
+                    <Image
+                      src="//user-icon.svg" // 替换为用户图标路径
+                      alt="User"
+                      width={24}
+                      height={24}
+                    />
+                  </div>
+                ) : (
+                  <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
+                    <Image
+                      src="/icons/ai-icon.svg" // 替换为 AI 图标路径
+                      alt="AI"
+                      width={24}
+                      height={24}
+                    />
+                  </div>
+                )}
               </div>
 
               {/* 消息内容 */}
               <div className="flex-1">
                 <div
-                  className="
-                    mt-2 
-                    text-sm text-gray-800 
-                    whitespace-pre-wrap
-                  "
+                  className="mt-2 text-sm text-gray-800 whitespace-pre-wrap"
                   dangerouslySetInnerHTML={{ __html: htmlMessages[m.id] || '' }}
                 />
                 <div className="mt-2">
@@ -105,11 +95,7 @@ export default function Chat() {
                         width={300}
                         height={300}
                         alt={attachment.name ?? `attachment-${index}`}
-                        className="
-                          rounded-lg 
-                          border border-gray-300 
-                          hover:shadow-md
-                        "
+                        className="rounded-lg border border-gray-300 hover:shadow-md"
                       />
                     ))}
                 </div>
@@ -121,13 +107,7 @@ export default function Chat() {
 
       {/* Input Form */}
       <form
-        className="
-          fixed bottom-0 left-0 right-0 
-          bg-white 
-          border-t border-gray-300 
-          px-6 py-4 
-          flex items-center space-x-4
-        "
+        className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-300 px-6 py-4 flex items-center space-x-4"
         onSubmit={(event) => {
           handleSubmit(event, {
             experimental_attachments: files,
@@ -154,37 +134,19 @@ export default function Chat() {
         />
         <label
           htmlFor="file-upload"
-          className="
-            px-4 py-2 
-            bg-gray-200 text-gray-700 
-            rounded-lg 
-            cursor-pointer 
-            hover:bg-gray-300 hover:shadow-md
-          "
+          className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg cursor-pointer hover:bg-gray-300 hover:shadow-md"
         >
           Upload Files
         </label>
         <input
-          className="
-            flex-1 
-            p-2 
-            border border-gray-300 
-            rounded-lg 
-            text-sm text-gray-800 
-            focus:outline-none focus:ring-2 focus:ring-gray-400
-          "
+          className="flex-1 p-2 border border-gray-300 rounded-lg text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-400"
           value={input}
           placeholder="Type your message..."
           onChange={handleInputChange}
         />
         <Button
           type="submit"
-          className="
-            px-4 py-2 
-            bg-gray-800 text-white 
-            rounded-lg 
-            hover:bg-gray-900 hover:shadow-md
-          "
+          className="px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-900 hover:shadow-md"
         >
           Send
         </Button>

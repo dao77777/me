@@ -30,8 +30,8 @@ export default function RootLayout({
           ${geistSans.variable} 
           ${geistMono.variable} 
           antialiased 
-          w-screen 
-          h-screen
+          w-full
+          overflow-auto
         `}
       >
         <QueryClientProvider>
