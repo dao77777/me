@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { QueryClientProvider } from "./(providers)/QueryClientProvider";
+import { TRPCProvider } from "./(providers)/TRPCProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -34,9 +35,11 @@ export default function RootLayout({
           overflow-auto
         `}
       >
-        <QueryClientProvider>
-          {children}
-        </QueryClientProvider>
+        <TRPCProvider>
+          <QueryClientProvider>
+            {children}
+          </QueryClientProvider>
+        </TRPCProvider>
       </body>
     </html>
   );

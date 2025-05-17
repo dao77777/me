@@ -2,7 +2,7 @@
 
 import { InfiniteData, queryOptions, useInfiniteQuery, useMutation, useQueries, useQuery, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { divide, set } from "lodash";
-import { FC, ReactNode, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { FC, ReactNode, Suspense, use, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 export default function ClientComponentTest() {
   const pages = [
@@ -418,14 +418,27 @@ const PagenationQueryTest: FC = () => {
   } = useQuery({
     queryKey: ["pagenation", page] as const,
     queryFn: async ({ queryKey }) => {
-      return getPagenationQueryTestData(queryKey[1], 10)
-    }
+      return getPagenationQueryTestData(queryKey[1], 0)
+    },
+    staleTime: 1000 * 60,
   })
+
+  const [isLoadingShow, setIsLoadingShow] = useState(isLoading);
+
+  useEffect(() => {
+    if (isLoading) {
+      setTimeout(() => {
+        setIsLoadingShow(true);
+      }, 500)
+    }
+  }, [isLoading])
 
   return (
     <div className="w-full">
       <div className="p-4 w-full"><div className="relative group w-full shadow shadow-gray-100/90 rounded-xs border-[1px] border-gray-100/90 p-4 hover:shadow-lg hover:shadow-gray-200/90 transition-all bg-gradient-to-tl from-white/90 to-gray-200/90 from-80%">
-        <div className="absolute top-0 left-0 -translate-1/3 w-5 h-5 bg-gray-800/10 rotate-30 rounded-xs group-hover:rotate-90 transition-all"></div>
+        <div className={`absolute top-0 left-0 -translate-1/3 w-5 h-5 bg-gray-800/10 rotate-30 rounded-xs group-hover:rotate-90 transition-all`}>
+          <div className={`absolute left-1/2 top-1/2 -translate-1/2 w-5 h-5 rounded-xs border-[0px] border-gray-800/0 ${fetchStatus === "fetching" && "border-[1px] animate-ping border-gray-800/90"}`}></div>
+        </div>
         {/* <div className="absolute left-0 top-0 -translate-1/3 w-8 h-8 bg-gray-800/10 rounded-xs rotate-60 transition-all group-hover:rotate-0"></div> */}
         <div className="w-full flex justify-between text-gray-800/90 font-bold py-2 border-b-[1px] border-gray-400/90">
           <div className="w-40">Id</div>
@@ -434,16 +447,24 @@ const PagenationQueryTest: FC = () => {
           <div className="w-40">Email</div>
           <div className="w-40">Address</div>
         </div>
-        <div className="w-full flex flex-col gap-2 pt-4">
-          {data?.map(item => (
-            <div key={item.id} className="w-full flex justify-between text-gray-600">
-              <div className="w-40">{item.id}</div>
-              <div className="w-40">{item.name}</div>
-              <div className="w-40">{item.phone}</div>
-              <div className="w-40">{item.email}</div>
-              <div className="w-40">{item.address}</div>
-            </div>
-          ))}
+        <div className="w-full h-4"></div>
+        <div className="w-full h-100 relative">
+          <div className={`w-full h-full flex flex-col justify-start ${isLoading ? "opacity-0" : "opacity-100"} transition-all duration-500`}>
+            {data?.map(item => (
+              <div key={item.id} className="w-full flex justify-between text-gray-600">
+                <div className="w-40 h-10">{item.id}</div>
+                <div className="w-40 h-10">{item.name}</div>
+                <div className="w-40 h-10">{item.phone}</div>
+                <div className="w-40 h-10">{item.email}</div>
+                <div className="w-40 h-10">{item.address}</div>
+              </div>
+            ))}
+            {data && data.length < 10 && data.length > 0 && <div className="w-full border-t-[1px] border-dashed border-gray-400/90 grow flex items-center justify-center text-xl text-gray-200/90 font-bold">No More Data</div>}
+            {data && data.length === 0 && <div className="w-full h-full flex items-center justify-center text-xl text-gray-200/90 font-bold">No Content</div>}
+          </div>
+          {
+            isLoadingShow && <div className={`absolute left-0 top-0 w-full h-100 flex items-center justify-center text-xl text-gray-200/90 font-bold ${isLoading ? "opacity-100" : "opacity-0"} transition-all duration-500`}>Loading...</div>
+          }
         </div>
       </div></div>
     </div>
@@ -505,7 +526,7 @@ const InfiniteQueryTest: FC = () => {
         size: 10,
       };
     },
-    staleTime: 10000
+    staleTime: 1000 * 60
   })
 
   const onScroll = () => {
@@ -649,10 +670,15 @@ const SuspenseComponent = () => {
     }, 2000);
   }
 
+  const [asyncData, setAsyncData] = useState<Promise<string> | null>(null);
+
+  const handleOnSendAsyncData = () => {
+    setAsyncData(new Promise(resolve => { setTimeout(() => resolve(`This is Async Data, ${String.fromCharCode(Math.floor(Math.random() * 26) + 97)}`), 2000) }))
+  }
+
   return (
-    <div>
+    <div className="flex flex-col items-start gap-4">
       <div className="text-gray-600/90">Suspense Component</div>
-      <div className="w-full h-4"></div>
       <button
         className="relative shadow shadow-gray-200/90 rounded-xs border-[1px] border-gray-100/90 p-2 bg-white/90 text-gray-600 font-bold cursor-pointer hover:bg-gray-100/90 active:scale-95"
         onClick={onClick}
@@ -662,6 +688,29 @@ const SuspenseComponent = () => {
         <div className="absolute left-[4px] top-0 w-[2px] h-full bg-gray-200/90"></div>
         Click Me To Suspense
       </button>
+      <button
+        className="relative shadow shadow-gray-200/90 rounded-xs border-[1px] border-gray-100/90 p-2 bg-white/90 text-gray-600/90  font-bold hover:bg-gray-100/90 active:scale-95 transition-all cursor-pointer"
+        onClick={handleOnSendAsyncData}
+      >
+        <div className="absolute left-0 top-0 w-[2px] h-full bg-gray-600/90"></div>
+        <div className="absolute left-[2px] top-0 w-[2px] h-full bg-gray-400/90"></div>
+        <div className="absolute left-[4px] top-0 w-[2px] h-full bg-gray-200/90"></div>
+        Click Me To Send Async Data To Child Component
+      </button>
+      <Suspense fallback={<div className="text-gray-600/90">Child Loading...</div>}>
+        <SuspenseChildComponent asyncData={asyncData} />
+      </Suspense>
+    </div>
+  )
+}
+
+const SuspenseChildComponent: FC<{ asyncData: Promise<string> | null }> = ({ asyncData }) => {
+  const data = asyncData ? use(asyncData) : "No Data";
+
+  return (
+    <div className="text-gray-600/90">
+      <div>Suspense Child Component</div>
+      <div>Async Data: {data}</div>
     </div>
   )
 }

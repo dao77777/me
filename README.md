@@ -443,3 +443,11 @@ install: `ai`, `@ai-sdk/openai-compatible`, `@ai-sdk`
 ```bash
 pnpm add ai @ai-sdk/openai-compatible @ai-sdk/react @ai-sdk/provider @ai-sdk/provider-utils
 ```
+
+### TRPC
+
+`pnpm add @trpc/server @trpc/client @trpc/tanstack-react-query zod @tanstack/react-query`
+
+### SuperJson
+
+`pnpm add superjson`

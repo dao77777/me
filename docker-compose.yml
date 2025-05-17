@@ -10,7 +10,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data  # 数据持久化
     ports:
-      - "5432:5432"  # 主机端口:容器端口
+      - "5431:5432"  # 主机端口:容器端口
     networks:
       - postgres_net
     restart: unless-stopped  # 容器意外停止时自动重启
